@@ -26,7 +26,7 @@
         }\
     }
 
-void lmp_test_mul_size(void) {
+static void lmp_test_mul_size(void) {
     TESTCASE(
         "multiplying 2 words with all bits set shall require 2 words",
         lmp_mul_size( (lmp_limb_t[]){ LIMB_FULL }, 1, (lmp_limb_t[]){ LIMB_FULL }, 1) == 2);
@@ -41,7 +41,7 @@ void lmp_test_mul_size(void) {
         lmp_mul_size( (lmp_limb_t[]){ LIMB_FULL, LIMB_FULL }, 2, (lmp_limb_t[]){ LIMB_FULL, LIMB_FULL, LIMB_FULL }, 3) == 5);
 }
 
-void lmp_test_mul_n1(void) {
+static void lmp_test_mul_n1_0001(void) {
     lmp_limb_t rp[] = { LIMB_UNTOUCHED, LIMB_UNTOUCHED, LIMB_UNTOUCHED };
     lmp_limb_t ap[] = { LIMB_FULL };
     lmp_mul_n1(rp, ap, 1, LIMB_FULL);
@@ -50,7 +50,17 @@ void lmp_test_mul_n1(void) {
     ASSERT_LIMB_EQUAL("rp[2]", LIMB_UNTOUCHED,                 rp[2]);
 }
 
+static void lmp_test_mul_n1_0002(void) {
+    lmp_limb_t rp[] = { LIMB_UNTOUCHED, LIMB_UNTOUCHED, LIMB_UNTOUCHED };
+    lmp_limb_t ap[] = { LIMB_HALF_FULL };
+    lmp_mul_n1(rp, ap, 1, LIMB_HALF_FULL );
+    ASSERT_LIMB_EQUAL("rp[0]", LMP_LIMB_C(0xFFFFFFFE00000001), rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_UNTOUCHED,                 rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_UNTOUCHED,                 rp[2]);
+}
+
 int main(void) {
     lmp_test_mul_size();
-    lmp_test_mul_n1();
+    lmp_test_mul_n1_0001();
+    lmp_test_mul_n1_0002();
 }
