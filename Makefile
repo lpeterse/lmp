@@ -7,7 +7,7 @@ test: lmp.o test.o
 	$(CC) $(CFLAGS) lmp.o test.c -o test
 	./test
 
-lmp.o: lmp.c
+lmp.o: lmp.c lmp.h
 	$(CC) $(CFLAGS) -c lmp.c
 
 test.o: test.c
