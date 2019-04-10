@@ -4,13 +4,7 @@
 
 #include "lmp.h"
 
-#define LIMB_MIN         LMP_LIMB_C(0x0000000000000000)
-#define LIMB_MIN_PP      LMP_LIMB_C(0x0000000000000001)
-#define LIMB_MAX         LMP_LIMB_C(0xFFFFFFFFFFFFFFFF)
-#define LIMB_MAX_MM      LMP_LIMB_C(0xFFFFFFFFFFFFFFFE)
-#define LIMB_HALF_FULL   LMP_LIMB_C(0x00000000FFFFFFFF)
-#define LIMB_HALF_FULL_1 LMP_LIMB_C(0x0000000100000000)
-#define LIMB_INI         LMP_LIMB_C(0x2323232323232323)
+
 
 #define TESTCASE(x,y) {\
         if (!(y)) {\
@@ -21,7 +15,7 @@
 
 #define ASSERT_LIMB_EQUAL(val, expected, actual) {\
         if (expected != actual) {\
-            printf ("%s failed: %s:\n  expected: 0x%016llx\n  actual:   0x%016llx\n", __FUNCTION__, val, expected, actual); \
+            printf ("%s failed: %s:\n  expected: 0x%016lx\n  actual:   0x%016lx\n", __FUNCTION__, val, expected, actual); \
             exit(1); \
         }\
     }

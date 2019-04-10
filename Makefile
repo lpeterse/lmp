@@ -1,11 +1,15 @@
-.PHONY: all test asm clean
+.PHONY: asm clean bench
 
 CC     := clang
 CFLAGS := -Wall -O2 -fno-unroll-loops
 
+bench: lmp.o bench.c test
+	$(CC) $(CFLAGS) bench.c lmp.o -lbsdnt -o bench
+	./test
+	./bench
+
 test: lmp.o test.o
 	$(CC) $(CFLAGS) lmp.o test.c -o test
-	./test
 
 lmp.o: lmp.c lmp.h
 	$(CC) $(CFLAGS) -c lmp.c
