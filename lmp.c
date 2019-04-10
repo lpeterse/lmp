@@ -35,5 +35,28 @@ void lmp_mul_nm(
     lmp_limb_t *ap, size_t an,
     lmp_limb_t *bp, size_t bn)
 {
-    // TODO
+    lmp_limb_t c = 0;
+    for (size_t bi = 0; bi < bn; bi++) {
+        lmp_dlimb_t ab = (lmp_dlimb_t) ap[0] * bp[bi] + c;
+        c = (lmp_limb_t) (ab >> LMP_LIMB_W);
+        rp[bi] = (lmp_limb_t) ab;
+    }
+    if (an > 1) {
+        rp[bn] = c;
+        for (size_t ai = 1; ai < an; ai++)
+        {
+            lmp_limb_t addc = 0;
+            lmp_limb_t mulc = 0;
+            for (size_t bi = 0; bi < bn; bi++)
+            {
+                lmp_dlimb_t ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
+                mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
+                rp[ai+bi] = LMP_ADDC(rp[ai+bi], (lmp_limb_t) ab, addc, &addc);
+            }
+            if (ai < an - 1 || addc || mulc)
+            {
+                rp[ai+bn] = addc + mulc;
+            }
+        }
+    }
 }

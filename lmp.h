@@ -10,7 +10,9 @@ typedef __uint128_t lmp_dlimb_t;
 #define LMP_LIMB_S 8
 #define LMP_LIMB_W __WORDSIZE
 #define LMP_LIMB_C(c) c ## ULL
+#define LMP_LIMB_MAX ULLONG_MAX
 #define LMP_MSB(x) (LMP_LIMB_W - 1 - __builtin_clzll(x))
+#define LMP_ADDC(x,y,ci,co) __builtin_addcll(x,y,ci,co)
 
 #elif __WORDSIZE == 32 && ULONG_MAX == 4294967295UL
 typedef unsigned long lmp_limb_t;
@@ -18,6 +20,7 @@ typedef unsigned int lmp_dlimb_t;
 #define LMP_LIMB_S 4
 #define LMP_LIMB_W __WORDSIZE
 #define LMP_LIMB_C(c) c ## UL
+#define LMP_LIMB_MAX ULONG_MAX
 #define LMP_MSB(x) (LMP_LIMB_W - 1 - __builtin_clzl(x))
 
 #else
