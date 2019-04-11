@@ -38,5 +38,9 @@ typedef unsigned int lmp_dlimb_t;
 /* Multiplication */
 size_t lmp_mul_size(lmp_limb_t *ap, size_t an, lmp_limb_t *bp, size_t bn);
 void lmp_mul_n1(lmp_limb_t *rp, lmp_limb_t *ap, size_t an, lmp_limb_t b);
-void lmp_mul_nm(lmp_limb_t *rp, lmp_limb_t *ap, size_t an, lmp_limb_t *bp, size_t bn);
+
+void lmp_mul_nm(
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
 

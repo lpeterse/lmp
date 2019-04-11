@@ -1,4 +1,5 @@
 test
+test-bsdnt
 bench
 *.o
 *.out

@@ -31,9 +31,9 @@ void lmp_mul_n1(
 }
 
 void lmp_mul_nm(
-    lmp_limb_t *rp,
-    lmp_limb_t *ap, size_t an,
-    lmp_limb_t *bp, size_t bn)
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
 {
     lmp_limb_t c = 0;
     for (size_t bi = 0; bi < bn; bi++) {
