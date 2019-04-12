@@ -1,12 +1,12 @@
 .PHONY: asm clean bench
 
 CC     := clang
-CFLAGS := -Wall -O2 -fno-unroll-loops
+CFLAGS := -Wall -O2
 
 bench: lmp.o bench.c test test-bsdnt
 	$(CC) $(CFLAGS) bench.c lmp.o -lbsdnt -o bench
-	./test
-	./test-bsdnt
+	#./test
+	#./test-bsdnt
 	./bench
 
 test: lmp.o test.o
@@ -21,8 +21,8 @@ lmp.o: lmp.c lmp.h
 test.o: test.c
 	$(CC) $(CFLAGS) -c test.c
 
-asm: test
-	gdb test -batch -ex 'disassemble ${FUNCTION}'
+asm: lmp.o
+	gdb lmp.o -batch -ex 'disassemble ${FUNCTION}'
 
 clean:
 	rm -rf *.o test

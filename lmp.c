@@ -1,5 +1,10 @@
 #include "lmp.h"
 
+#define likely(x)      __builtin_expect(!!(x), 1)
+#define unlikely(x)    __builtin_expect(!!(x), 0)
+#define MIN(x,y)       (x > y ? y : x)
+#define MAX(x,y)       (x > y ? x : y)
+
 size_t lmp_mul_size(
     lmp_limb_t *ap, size_t an,
     lmp_limb_t *bp, size_t bn)
@@ -35,28 +40,51 @@ void lmp_mul_nm(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {
-    lmp_limb_t c = 0;
-    for (size_t bi = 0; bi < bn; bi++) {
-        lmp_dlimb_t ab = (lmp_dlimb_t) ap[0] * bp[bi] + c;
-        c = (lmp_limb_t) (ab >> LMP_LIMB_W);
+    __builtin_assume(an > 1);
+    __builtin_assume(bn > 1);
+
+    lmp_dlimb_t ab;
+    lmp_limb_t addc, mulc = 0;
+    for (size_t bi = 0; bi < bn; bi++)
+    {
+        ab = (lmp_dlimb_t) ap[0] * bp[bi] + mulc;
+        mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
         rp[bi] = (lmp_limb_t) ab;
     }
-    if (an > 1) {
-        rp[bn] = c;
-        for (size_t ai = 1; ai < an; ai++)
+    rp[bn] = mulc;
+    for (size_t ai = 1; ai < an; ai++)
+    {
+        addc = mulc = 0;
+        for (size_t bi = 0; bi < bn; bi++)
         {
-            lmp_limb_t addc = 0;
-            lmp_limb_t mulc = 0;
-            for (size_t bi = 0; bi < bn; bi++)
-            {
-                lmp_dlimb_t ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
-                mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
-                rp[ai+bi] = LMP_ADDC(rp[ai+bi], (lmp_limb_t) ab, addc, &addc);
-            }
-            if (ai < an - 1 || addc || mulc)
-            {
-                rp[ai+bn] = addc + mulc;
-            }
+            ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
+            mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
+            rp[ai + bi] = LMP_ADDC(rp[ai+bi], (lmp_limb_t) ab, addc, &addc);
         }
+        if (ai + 1 < an || mulc || addc)
+        {
+            rp[ai + bn] = addc + mulc;
+        }
+    }
+}
+
+size_t lmp_ior_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    size_t rn = MIN(an, bn);
+    while (rn > 0 && !(ap[rn - 1] | bp[rn - 1]) rn--;
+    return rn;
+}
+
+void lmp_ior_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp)
+{
+    __builtin_assume(rn > 1);
+
+    for(size_t ri = 0;  ri < rn; ri++) {
+        rp[ri] = ap[ri] | bp[ri];
     }
 }
