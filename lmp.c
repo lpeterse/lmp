@@ -68,12 +68,16 @@ void lmp_mul_nm(
     }
 }
 
+/*****************************************************************************
+ * Bitwise operations 
+ *****************************************************************************/
+
 size_t lmp_ior_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {
     size_t rn = MIN(an, bn);
-    while (rn > 0 && !(ap[rn - 1] | bp[rn - 1]) rn--;
+    while (rn > 0 && !(ap[rn - 1] | bp[rn - 1])) rn--;
     return rn;
 }
 
@@ -87,4 +91,67 @@ void lmp_ior_mn(
     for(size_t ri = 0;  ri < rn; ri++) {
         rp[ri] = ap[ri] | bp[ri];
     }
+}
+
+size_t lmp_xor_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    size_t rn = an;
+    if (an != bn) return MAX(an, bn);
+    while (rn > 0 && !(ap[rn - 1] ^ bp[rn - 1])) rn--;
+    return rn;
+}
+
+void lmp_xor_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp)
+{
+    __builtin_assume(rn > 1);
+
+    for(size_t ri = 0;  ri < rn; ri++) {
+        rp[ri] = ap[ri] ^ bp[ri];
+    }
+}
+
+size_t lmp_and_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    size_t rn = MIN(an, bn);
+    while (rn > 0 && !(ap[rn - 1] & bp[rn - 1])) rn--;
+    return rn;
+}
+
+void lmp_and_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp)
+{
+    __builtin_assume(rn > 1);
+
+    for(size_t ri = 0;  ri < rn; ri++) {
+        rp[ri] = ap[ri] & bp[ri];
+    }
+}
+
+size_t lmp_popcount(
+    const lmp_limb_t *const restrict ap, const size_t an)
+{
+    size_t count = 0;
+    for (size_t ai = 0; ai < an; ai++)
+    {
+        count += __builtin_popcount(ap[ai]);
+    }
+    return count;
+}
+
+size_t lmp_testbit(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi)
+{
+    size_t ai = bi / LMP_LIMB_S;
+    size_t wi = bi % LMP_LIMB_W;
+    return ai < an && (ap[ai] & (1 << wi));
 }
