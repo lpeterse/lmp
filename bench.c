@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <bsdnt/nn.h>
 #include <time.h>
+
 #include "lmp.h"
 
 #define ITERATIONS 1000

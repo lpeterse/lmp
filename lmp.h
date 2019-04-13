@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
+#include <time.h>
 
 #define LIMB_MIN         LMP_LIMB_C(0x0000000000000000)
 #define LIMB_MIN_PP      LMP_LIMB_C(0x0000000000000001)
@@ -43,4 +45,36 @@ void lmp_mul_nm(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
+
+
+/*****************************************************************************
+ * Bitwise operations 
+ *****************************************************************************/
+
+size_t lmp_ior_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
+void lmp_ior_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp);
+
+size_t lmp_xor_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
+void lmp_xor_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp);
+
+size_t lmp_and_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
+void lmp_and_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp);
 

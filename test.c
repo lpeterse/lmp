@@ -13,6 +13,12 @@
         }\
     }
 
+#define ASSERT_SIZE_EQUAL(val, expected, actual) {\
+        if (expected != actual) {\
+            printf ("%s failed: %s:\n  expected: 0x%016lx\n  actual:   0x%016lx\n", __FUNCTION__, val, expected, actual); \
+            exit(1); \
+        }\
+    }
 #define ASSERT_LIMB_EQUAL(val, expected, actual) {\
         if (expected != actual) {\
             printf ("%s failed: %s:\n  expected: 0x%016lx\n  actual:   0x%016lx\n", __FUNCTION__, val, expected, actual); \
@@ -35,7 +41,8 @@ static void lmp_test_mul_size(void) {
         lmp_mul_size( (lmp_limb_t[]){ LIMB_MAX, LIMB_MAX }, 2, (lmp_limb_t[]){ LIMB_MAX, LIMB_MAX, LIMB_MAX }, 3) == 5);
 }
 
-static void lmp_test_mul_n1_0001(void) {
+static void lmp_test_mul_n1_0001(void)
+{
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MAX };
     lmp_mul_n1(rp, ap, 1, LIMB_MAX);
@@ -44,7 +51,8 @@ static void lmp_test_mul_n1_0001(void) {
     ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                 rp[2]);
 }
 
-static void lmp_test_mul_n1_0002(void) {
+static void lmp_test_mul_n1_0002(void)
+{
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_HALF_FULL };
     lmp_mul_n1(rp, ap, 1, LIMB_HALF_FULL );
@@ -53,7 +61,8 @@ static void lmp_test_mul_n1_0002(void) {
     ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                 rp[2]);
 }
 
-static void lmp_test_mul_nm_0001(void) {
+static void lmp_test_mul_nm_0001(void)
+{
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MAX, LIMB_MAX };
     lmp_limb_t bp[] = { LIMB_MAX, LIMB_MAX };
@@ -65,7 +74,8 @@ static void lmp_test_mul_nm_0001(void) {
     ASSERT_LIMB_EQUAL("rp[4]", LIMB_INI,      rp[4]);
 }
 
-static void lmp_test_mul_nm_0002(void) {
+static void lmp_test_mul_nm_0002(void)
+{
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MAX, LIMB_MIN + 1 };
     lmp_limb_t bp[] = { LIMB_MAX, LIMB_MAX };
@@ -77,7 +87,8 @@ static void lmp_test_mul_nm_0002(void) {
     ASSERT_LIMB_EQUAL("rp[4]", LIMB_INI,      rp[4]);
 }
 
-static void lmp_test_mul_nm_0003(void) {
+static void lmp_test_mul_nm_0003(void)
+{
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MAX, LIMB_MIN + 1 };
     lmp_limb_t bp[] = { LIMB_MAX, LIMB_MIN + 1 };
@@ -88,6 +99,111 @@ static void lmp_test_mul_nm_0003(void) {
     ASSERT_LIMB_EQUAL("rp[3]", LIMB_INI,      rp[3]);
 }
 
+/*****************************************************************************
+ * Bitwise operations 
+ *****************************************************************************/
+
+static void lmp_test_ior_mn_size_0001(void)
+{
+    lmp_limb_t ap[] = {};
+    lmp_limb_t bp[] = {};
+    size_t result = lmp_ior_mn_size(ap, 0L, bp, 0L);
+    ASSERT_SIZE_EQUAL("result", 0L, result);
+}
+
+static void lmp_test_ior_mn_size_0002(void)
+{
+    lmp_limb_t ap[] = { LIMB_MIN + 1 };
+    lmp_limb_t bp[] = { LIMB_MIN + 1, LIMB_MIN + 1 };
+    size_t result = lmp_ior_mn_size(ap, 1L, bp, 2L);
+    ASSERT_SIZE_EQUAL("result", 1L, result);
+}
+
+static void lmp_test_ior_mn_size_0003(void)
+{
+    lmp_limb_t ap[] = { LIMB_MIN, LIMB_MIN, LIMB_MIN + 1};
+    lmp_limb_t bp[] = { LIMB_MIN, LIMB_MIN + 1 };
+    size_t result = lmp_ior_mn_size(ap, 3L, bp, 2L);
+    ASSERT_SIZE_EQUAL("result", 2L, result);
+}
+
+static void lmp_test_ior_mn_0001(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI,     LIMB_INI,     LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MIN,     LIMB_MIN + 1, LIMB_MAX };
+    lmp_limb_t bp[] = { LIMB_MIN + 4, LIMB_MIN + 2, LIMB_MAX };
+    lmp_ior_mn(rp, 2, ap, bp);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN + 4, rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 3, rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,     rp[2]);
+}
+
+static void lmp_test_xor_mn_size_0001(void)
+{
+    lmp_limb_t ap[] = {};
+    lmp_limb_t bp[] = {};
+    size_t result = lmp_xor_mn_size(ap, 0L, bp, 0L);
+    ASSERT_SIZE_EQUAL("result", 0L, result);
+}
+
+static void lmp_test_xor_mn_size_0002(void)
+{
+    lmp_limb_t ap[] = { LIMB_MIN,     LIMB_MAX, LIMB_MIN + 2, LIMB_MIN + 3 };
+    lmp_limb_t bp[] = { LIMB_MIN + 1, LIMB_MAX, LIMB_MIN + 2, LIMB_MIN + 3 };
+    size_t result = lmp_xor_mn_size(ap, 4L, bp, 4L);
+    ASSERT_SIZE_EQUAL("result", 1L, result);
+}
+
+static void lmp_test_xor_mn_size_0003(void)
+{
+    lmp_limb_t ap[] = { LIMB_MIN, LIMB_MIN, LIMB_MIN };
+    lmp_limb_t bp[] = { LIMB_MIN, LIMB_MIN, LIMB_MIN, LIMB_MIN };
+    size_t result = lmp_xor_mn_size(ap, 3L, bp, 4L);
+    ASSERT_SIZE_EQUAL("result", 4L, result);
+}
+
+static void lmp_test_xor_mn_0001(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI,     LIMB_INI,     LIMB_INI     };
+    lmp_limb_t ap[] = { LIMB_MAX,     LIMB_MIN + 1, LIMB_MIN + 1 };
+    lmp_limb_t bp[] = { LIMB_MAX - 1, LIMB_MIN + 3, LIMB_MIN + 2 };
+    lmp_xor_mn(rp, 2, ap, bp);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN + 1, rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 2, rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,     rp[2]);
+}
+
+static void lmp_test_and_mn_size_0001(void)
+{
+    lmp_limb_t ap[] = {};
+    lmp_limb_t bp[] = {};
+    size_t result = lmp_and_mn_size(ap, 0L, bp, 0L);
+    ASSERT_SIZE_EQUAL("result", 0L, result);
+}
+
+static void lmp_test_and_mn_size_0002(void)
+{
+    lmp_limb_t ap[] = { LIMB_MIN,     LIMB_MAX, LIMB_MIN + 2, LIMB_MIN + 3 };
+    lmp_limb_t bp[] = { LIMB_MIN + 1, LIMB_MAX, LIMB_MIN + 2, LIMB_MIN + 3 };
+    size_t result = lmp_xor_mn_size(ap, 4L, bp, 4L);
+    ASSERT_SIZE_EQUAL("result", 1L, result);
+}
+
+static void lmp_test_and_mn_0001(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI,     LIMB_INI,     LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MAX,     LIMB_MIN + 1, LIMB_MIN };
+    lmp_limb_t bp[] = { LIMB_MAX - 1, LIMB_MIN + 3, LIMB_MIN };
+    lmp_and_mn(rp, 2, ap, bp);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MAX - 1, rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 1, rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,     rp[2]);
+}
+
+/*****************************************************************************
+ * main
+ *****************************************************************************/
+
 int main(void) {
     lmp_test_mul_size();
     lmp_test_mul_n1_0001();
@@ -95,4 +211,18 @@ int main(void) {
     lmp_test_mul_nm_0001();
     lmp_test_mul_nm_0002();
     lmp_test_mul_nm_0003();
+
+    lmp_test_ior_mn_size_0001();
+    lmp_test_ior_mn_size_0002();
+    lmp_test_ior_mn_size_0003();
+    lmp_test_ior_mn_0001();
+
+    lmp_test_xor_mn_size_0001();
+    lmp_test_xor_mn_size_0002();
+    lmp_test_xor_mn_size_0003();
+    lmp_test_xor_mn_0001();
+
+    lmp_test_and_mn_size_0001();
+    lmp_test_and_mn_size_0002();
+    lmp_test_and_mn_0001();
 }

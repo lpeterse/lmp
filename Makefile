@@ -5,8 +5,8 @@ CFLAGS := -Wall -O2 -mpopcnt
 
 bench: lmp.o bench.c test test-bsdnt
 	$(CC) $(CFLAGS) bench.c lmp.o -lbsdnt -o bench
-	#./test
-	#./test-bsdnt
+	./test
+	./test-bsdnt
 	./bench
 
 test: lmp.o test.o
