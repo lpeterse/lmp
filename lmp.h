@@ -78,3 +78,28 @@ void lmp_and_mn(
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp);
 
+size_t lmp_testbit(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi);
+
+size_t lmp_setbit_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi);
+
+void lmp_setbit(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi);
+
+size_t lmp_clearbit_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi);
+
+void lmp_clearbit(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bi);
+
+size_t lmp_popcount(
+    const lmp_limb_t *const restrict ap, const size_t an);
+

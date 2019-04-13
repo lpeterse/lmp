@@ -5,6 +5,11 @@
 #define MIN(x,y)       (x > y ? y : x)
 #define MAX(x,y)       (x > y ? x : y)
 
+#if __WORDSIZE == 64
+#define POPCOUNT(x) __builtin_popcountl(x)
+
+#endif
+
 size_t lmp_mul_size(
     lmp_limb_t *ap, size_t an,
     lmp_limb_t *bp, size_t bn)
@@ -128,23 +133,12 @@ void lmp_and_mn(
     }
 }
 
-size_t lmp_popcount(
-    const lmp_limb_t *const restrict ap, const size_t an)
-{
-    size_t count = 0;
-    for (size_t ai = 0; ai < an; ai++)
-    {
-        count += __builtin_popcount(ap[ai]);
-    }
-    return count;
-}
-
 size_t lmp_testbit(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {
-    size_t ai = bi / sizeof(lmp_limb_t);
-    size_t wi = bi % sizeof(lmp_limb_t);
+    size_t ai = bi / LMP_LIMB_W;
+    size_t wi = bi % LMP_LIMB_W;
     return ai < an && (ap[ai] & (1 << wi));
 }
 
@@ -152,7 +146,7 @@ size_t lmp_setbit_size(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {
-    size_t ai = bi / sizeof(lmp_limb_t);
+    size_t ai = bi / LMP_LIMB_W;
     return MAX(an, ai + 1);
 }
 
@@ -161,10 +155,10 @@ void lmp_setbit(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {
-    size_t ri = bi / sizeof(lmp_limb_t);
-    size_t wi = bi % sizeof(lmp_limb_t);
-    memcpy(rp, ap, an * sizeof(lmp_limb_t));
-    memset(rp + an, 0, (rn - an) * sizeof(lmp_limb_t));
+    size_t ri = bi / LMP_LIMB_W;
+    size_t wi = bi % LMP_LIMB_W;
+    memcpy(rp, ap, an * LMP_LIMB_S);
+    memset(rp + an, 0, (rn - an) * LMP_LIMB_S);
     rp[ri] = rp[ri] | (1 << wi);
 }
 
@@ -172,8 +166,8 @@ size_t lmp_clearbit_size(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {
-    size_t ai = bi / sizeof(lmp_limb_t);
-    size_t wi = bi % sizeof(lmp_limb_t);
+    size_t ai = bi / LMP_LIMB_W;
+    size_t wi = bi % LMP_LIMB_W;
     if (ai + 1 == an && !(ap[ai] & ~(1 << wi)))
     {
         size_t rn = an - 1;
@@ -188,8 +182,19 @@ void lmp_clearbit(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {
-    size_t ai = bi / sizeof(lmp_limb_t);
-    size_t wi = bi % sizeof(lmp_limb_t);
-    memcpy(rp, ap, rn * sizeof(lmp_limb_t));
+    size_t ai = bi / LMP_LIMB_W;
+    size_t wi = bi % LMP_LIMB_W;
+    memcpy(rp, ap, rn * LMP_LIMB_S);
     if (ai < rn) rp[ai] = rp[ai] & ~(1 << wi);
+}
+
+size_t lmp_popcount(
+    const lmp_limb_t *const restrict ap, const size_t an)
+{
+    size_t count = 0;
+    for (size_t ai = 0; ai < an; ai++)
+    {
+        count += POPCOUNT(ap[ai]);
+    }
+    return count;
 }
