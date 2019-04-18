@@ -1,7 +1,7 @@
 .PHONY: asm clean bench
 
 CC     := clang
-CFLAGS := -Wall -O2
+CFLAGS := -Wall -O3
 
 bench: lmp.o bench.c test test-bsdnt
 	$(CC) $(CFLAGS) bench.c lmp.o -lbsdnt -o bench

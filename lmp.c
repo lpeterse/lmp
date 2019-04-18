@@ -5,25 +5,38 @@
 #define MIN(x,y)       (x > y ? y : x)
 #define MAX(x,y)       (x > y ? x : y)
 
+
 #if __WORDSIZE == 64
 #define POPCOUNT(x) __builtin_popcountl(x)
+#define CLZ(x) __builtin_clzl(x)
+#define FFS(x) __builtin_ffsl(x)
 
 #endif
 
-size_t lmp_mul_size(
-    lmp_limb_t *ap, size_t an,
-    lmp_limb_t *bp, size_t bn)
-{
-    lmp_limb_t a = ap[an - 1];
-    lmp_limb_t b = bp[bn - 1];
-
-    return an + bn - (LMP_MSB(a) + LMP_MSB(b) + 1 < LMP_LIMB_W);
+// This determines in pure C whether the machine is little endian.
+// With any sufficiently smart compiler (-O2) this gets optimized away.
+//
+// Dump of assembler code for function is_little_endian:
+//   0x0000000000000250 <+0>:     mov    $0x1,%eax
+//   0x0000000000000255 <+5>:     retq
+static inline int is_little_endian() {
+    lmp_limb_t t = 0x01020304050607UL;
+    uint8_t *p   = (uint8_t *) &t;
+    lmp_limb_t q =((lmp_limb_t) p[0] <<  0)
+                | ((lmp_limb_t) p[1] <<  8)
+                | ((lmp_limb_t) p[2] << 16)
+                | ((lmp_limb_t) p[3] << 24)
+                | ((lmp_limb_t) p[4] << 32)
+                | ((lmp_limb_t) p[5] << 40)
+                | ((lmp_limb_t) p[6] << 48)
+                | ((lmp_limb_t) p[7] << 56);
+    return t == q;
 }
 
-void lmp_mul_n1(
-    lmp_limb_t *rp,
-    lmp_limb_t *ap, size_t an,
-    lmp_limb_t b)
+void lmp_mul_m1(
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t b)
 {
     // TODO: asm is different when carry is lmp_limb_t.
     // Figure out which is better.
@@ -40,7 +53,17 @@ void lmp_mul_n1(
     }
 }
 
-void lmp_mul_nm(
+size_t lmp_mul_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    lmp_limb_t a = ap[an - 1];
+    lmp_limb_t b = bp[bn - 1];
+
+    return an + bn - (LMP_MSB(a) + LMP_MSB(b) + 1 < LMP_LIMB_W);
+}
+
+void lmp_mul_mn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
@@ -71,6 +94,61 @@ void lmp_mul_nm(
             rp[ai + bn] = addc + mulc;
         }
     }
+}
+
+/*****************************************************************************
+ * Shift operations
+ *****************************************************************************/
+
+size_t lmp_lshift_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits)
+{
+    size_t x = bits / LMP_LIMB_W;
+    size_t y = bits % LMP_LIMB_W;
+    return an
+        ? an + x + (LMP_LIMB_W - CLZ(ap[an - 1]) + y > LMP_LIMB_W)
+        : 0;
+}
+
+void lmp_lshift(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits)
+{
+    if (unlikely(!rn)) {
+        return;
+    }
+    // Byte-wise copy is a nice optimisation that only works on little-endian
+    if (!(bits % 8) && is_little_endian()) {
+        memset(rp, 0, bits / 8); // check
+        memcpy(((uint8_t *)rp) + bits / 8, ap, an * LMP_LIMB_S); // check
+        size_t j = CLZ(ap[an - 1]); // leading 0s
+        if (j) {
+            rp[rn - 1];
+        }
+        //if (bits % LMP_LIMB_W) {
+        //    rp[rn - 1] = ap[an - 1] >> (LMP_LIMB_W - bits % LMP_LIMB_W); 
+        //} else {
+        //    rp[rn - 1] = ap[an - 1];
+        //}
+        return;
+    }
+    // Another optimisation only applies when shift is a multiple of word size
+    if (!(bits % LMP_LIMB_W)) {
+        memset(rp, 0, bits / LMP_LIMB_S);
+        memcpy(((uint8_t *)rp) + bits / LMP_LIMB_S, ap, an * LMP_LIMB_S);
+        return;
+    }
+
+    //if (bits & 7)
+    //{
+    //}
+    //else 
+    //{
+    //    memset(rp, 0, );
+    //    memcpy(rp, ap + );
+    //}
 }
 
 /*****************************************************************************
@@ -198,3 +276,6 @@ size_t lmp_popcount(
     }
     return count;
 }
+
+
+

@@ -37,15 +37,36 @@ typedef unsigned int lmp_dlimb_t;
 #error "unknown machine word size"
 #endif
 
-/* Multiplication */
-size_t lmp_mul_size(lmp_limb_t *ap, size_t an, lmp_limb_t *bp, size_t bn);
-void lmp_mul_n1(lmp_limb_t *rp, lmp_limb_t *ap, size_t an, lmp_limb_t b);
+/*****************************************************************************
+ * Multiplication
+ *****************************************************************************/
 
-void lmp_mul_nm(
+void lmp_mul_m1(
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t b);
+
+size_t lmp_mul_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
+void lmp_mul_mn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
 
+/*****************************************************************************
+ * Shift operations
+ *****************************************************************************/
+
+ size_t lmp_lshift_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits);
+
+ void lmp_lshift(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits);
 
 /*****************************************************************************
  * Bitwise operations 
