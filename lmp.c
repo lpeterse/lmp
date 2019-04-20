@@ -149,18 +149,18 @@ void lmp_lshift(
         //   - initialise the lower limbs with 0
         //   - word-wise copy and shift from ap
         //   - the highest limb is only assigned when its non-zero
-        lmp_limb_t hi;
-        lmp_limb_t lo = 0;
+        lmp_limb_t x;
+        lmp_limb_t y = 0;
         for (size_t ri = 0; ri < sl; ri++) {
             rp[ri] = 0;
         }
         for (size_t ai = 0; ai < an; ai++) {
-            hi = ap[ai] << sb;
-            rp[ai + sl] = hi | lo;
-            lo = ap[ai] >> (LMP_LIMB_W - sb);
+            x = ap[ai] << sb;
+            rp[ai + sl] = x | y;
+            y = ap[ai] >> (LMP_LIMB_W - sb);
         }
-        if (lo) {
-            rp[rn - 1] = lo;
+        if (y) {
+            rp[rn - 1] = y;
         }
     }
 }
