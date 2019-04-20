@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define LIMB_MIN         LMP_LIMB_C(0x0000000000000000)

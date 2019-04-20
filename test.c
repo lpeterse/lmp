@@ -146,19 +146,108 @@ static void lmp_test_lshift_size_0006(void)
     ASSERT_SIZE_EQUAL("result", 4L, result);
 }
 
+/* Shift 1 by 1 bit. */
 static void lmp_test_lshift_0001(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MIN + 1 };
+    lmp_lshift(rp, 1, ap, 1, 1);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN + 2,                 rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_INI,                     rp[1]);
+}
+
+/* Shift 1 by 8 bits. */
+static void lmp_test_lshift_0002(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MIN + 1 };
+    lmp_lshift(rp, 1, ap, 1, 8);
+    ASSERT_LIMB_EQUAL("rp[0]", (LIMB_MIN + 1) << 8,          rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_INI,                     rp[1]);
+}
+
+/* Shift 1 by WORDSIZE bits. */
+static void lmp_test_lshift_0003(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MIN + 1 };
+    lmp_lshift(rp, 2, ap, 1, LMP_LIMB_W);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 1,                 rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                     rp[2]);
+}
+
+/* Shift 1 by WORDSIZE + 1 bits. */
+static void lmp_test_lshift_0004(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { LIMB_MIN + 1 };
+    lmp_lshift(rp, 2, ap, 1, LMP_LIMB_W + 1);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 2,                 rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                     rp[2]);
+}
+
+/* Shift 1 << (WORDSIZE - 1) by 1 bit. */
+static void lmp_test_lshift_0005(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { (LIMB_MIN + 1) << (LMP_LIMB_W - 1) };
+    lmp_lshift(rp, 2, ap, 1, 1);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 1,                 rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                     rp[2]);
+}
+
+/* Shift 1 << (WORDSIZE - 1) by 8 bits. */
+static void lmp_test_lshift_0006(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { (LIMB_MIN + 1) << (LMP_LIMB_W - 1), LIMB_INI };
+    lmp_lshift(rp, 2, ap, 1, 8);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", (LIMB_MIN + 1) << 7,          rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                     rp[2]);
+}
+
+/* Shift 1 << (WORDSIZE - 1) by WORDSIZE bits. */
+static void lmp_test_lshift_0007(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { (LIMB_MIN + 1) << (LMP_LIMB_W - 1) };
+    lmp_lshift(rp, 2, ap, 1, LMP_LIMB_W);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                           rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", (LIMB_MIN + 1) << (LMP_LIMB_W - 1), rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_INI,                           rp[2]);
+}
+
+/* Shift 1 << (WORDSIZE - 1) by WORDSIZE + 1 bits. */
+static void lmp_test_lshift_0008(void)
+{
+    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
+    lmp_limb_t ap[] = { (LIMB_MIN + 1) << (LMP_LIMB_W - 1) };
+    lmp_lshift(rp, 3, ap, 1, LMP_LIMB_W + 1);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN,                     rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_MIN + 1,                 rp[2]);
+    ASSERT_LIMB_EQUAL("rp[3]", LIMB_INI,                     rp[3]);
+}
+
+/* Shift several words by WORDSIZE bits. */
+static void lmp_test_lshift_0009(void)
 {
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MIN + 1, LIMB_MIN + 2, LIMB_MIN + 3 };
     lmp_lshift(rp, 4, ap, 3, LMP_LIMB_W);
-    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,      rp[0]);
-    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 1,  rp[1]);
-    ASSERT_LIMB_EQUAL("rp[2]", LIMB_MIN + 2,  rp[2]);
-    ASSERT_LIMB_EQUAL("rp[3]", LIMB_MIN + 3,  rp[3]);
-    ASSERT_LIMB_EQUAL("rp[4]", LIMB_INI,      rp[4]);
+    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MIN,                     rp[0]);
+    ASSERT_LIMB_EQUAL("rp[1]", LIMB_MIN + 1,                 rp[1]);
+    ASSERT_LIMB_EQUAL("rp[2]", LIMB_MIN + 2,                 rp[2]);
+    ASSERT_LIMB_EQUAL("rp[3]", LIMB_MIN + 3,                 rp[3]);
+    ASSERT_LIMB_EQUAL("rp[4]", LIMB_INI,                     rp[4]);
 }
 
-static void lmp_test_lshift_0002(void)
+/* Shift several words by 16 bits. */
+static void lmp_test_lshift_0010(void)
 {
     lmp_limb_t rp[] = { LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI, LIMB_INI };
     lmp_limb_t ap[] = { LIMB_MAX, LIMB_MAX, LIMB_MAX >> 8 };
@@ -168,15 +257,6 @@ static void lmp_test_lshift_0002(void)
     ASSERT_LIMB_EQUAL("rp[2]", LIMB_MAX,                     rp[2]);
     ASSERT_LIMB_EQUAL("rp[3]", LIMB_MAX >> (LMP_LIMB_W - 8), rp[3]);
     ASSERT_LIMB_EQUAL("rp[4]", LIMB_INI,                     rp[4]);
-}
-
-static void lmp_test_lshift_0003(void)
-{
-    lmp_limb_t rp[] = { LIMB_INI, LIMB_INI };
-    lmp_limb_t ap[] = { LIMB_MAX >> 8 };
-    lmp_lshift(rp, 1, ap, 1, 8);
-    ASSERT_LIMB_EQUAL("rp[0]", LIMB_MAX << 8,                rp[0]);
-    ASSERT_LIMB_EQUAL("rp[1]", LIMB_INI,                     rp[1]);
 }
 
 /*****************************************************************************
@@ -428,6 +508,13 @@ int main(void) {
     lmp_test_lshift_0001();
     lmp_test_lshift_0002();
     lmp_test_lshift_0003();
+    lmp_test_lshift_0004();
+    lmp_test_lshift_0005();
+    lmp_test_lshift_0006();
+    lmp_test_lshift_0007();
+    lmp_test_lshift_0008();
+    lmp_test_lshift_0009();
+    lmp_test_lshift_0010();
 
     lmp_test_ior_mn_size_0001();
     lmp_test_ior_mn_size_0002();

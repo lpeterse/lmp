@@ -14,7 +14,7 @@
         }\
     }
 
-static void lmp_test_mul_nm_0001(void) {
+static void lmp_test_mul_mn_0001(void) {
     rand_t rnd;
     randinit(&rnd);
     const size_t tn = 100000;
@@ -35,7 +35,7 @@ static void lmp_test_mul_nm_0001(void) {
         for (size_t ri = 0; ri < rn; ri++) {
             rp[ri] = sp[ri] = LIMB_INI;
         }
-        lmp_mul_nm(rp, ap, an, bp, bn);
+        lmp_mul_mn(rp, ap, an, bp, bn);
         nn_mul_classical(sp, ap, an, bp, bn);
         if (!sp[rn-2]) {
             sp[rn-2] = LMP_LIMB_S;

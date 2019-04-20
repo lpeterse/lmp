@@ -116,39 +116,53 @@ void lmp_lshift(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bits)
 {
-    if (unlikely(!rn)) {
-        return;
-    }
-    // Byte-wise copy is a nice optimisation that only works on little-endian
-    if (!(bits % 8) && is_little_endian()) {
-        memset(rp, 0, bits / 8); // check
-        memcpy(((uint8_t *)rp) + bits / 8, ap, an * LMP_LIMB_S); // check
-        size_t j = CLZ(ap[an - 1]); // leading 0s
-        if (j) {
-            rp[rn - 1];
+    const size_t sl = bits / LMP_LIMB_W;
+    const size_t sb = bits % LMP_LIMB_W;
+    const bool is_shift_by_bytes = !(bits % 8) && is_little_endian();
+    const bool is_shift_by_words = !sb;
+    if (!rn) {
+        // Do nothing.
+    } else if (is_shift_by_words) {
+        // This optimisation does a wordsize aligned memcpy and
+        // is eventually vectorized.
+        const size_t len1 = bits / 8;
+        const size_t len2 = rn * LMP_LIMB_S - len1;
+        memset(rp, 0, len1);
+        memcpy(((char *)rp) + len1, ap, len2);
+    } else if (is_shift_by_bytes) {
+        // Doing a memcpy to implement the shift is only allowed if
+        // the machine is little endian (due to memory representation).
+        const lmp_limb_t x = ap[an - 1] << sb;
+        const lmp_limb_t y = ap[an - 1] >> (LMP_LIMB_W - sb);
+        if (y) {
+            rp[rn - 2] = x;
+            rp[rn - 1] = y;
+        } else {
+            rp[rn - 1] = x;
         }
-        //if (bits % LMP_LIMB_W) {
-        //    rp[rn - 1] = ap[an - 1] >> (LMP_LIMB_W - bits % LMP_LIMB_W); 
-        //} else {
-        //    rp[rn - 1] = ap[an - 1];
-        //}
-        return;
+        const size_t len1 = bits / 8;
+        const size_t len2 = (an - 1) * LMP_LIMB_S;
+        memset(rp, 0, len1);
+        memcpy(((char *)rp) + len1, ap, len2);
+    } else {
+        // Generic case:
+        //   - initialise the lower limbs with 0
+        //   - word-wise copy and shift from ap
+        //   - the highest limb is only assigned when its non-zero
+        lmp_limb_t hi;
+        lmp_limb_t lo = 0;
+        for (size_t ri = 0; ri < sl; ri++) {
+            rp[ri] = 0;
+        }
+        for (size_t ai = 0; ai < an; ai++) {
+            hi = ap[ai] << sb;
+            rp[ai + sl] = hi | lo;
+            lo = ap[ai] >> (LMP_LIMB_W - sb);
+        }
+        if (lo) {
+            rp[rn - 1] = lo;
+        }
     }
-    // Another optimisation only applies when shift is a multiple of word size
-    if (!(bits % LMP_LIMB_W)) {
-        memset(rp, 0, bits / LMP_LIMB_S);
-        memcpy(((uint8_t *)rp) + bits / LMP_LIMB_S, ap, an * LMP_LIMB_S);
-        return;
-    }
-
-    //if (bits & 7)
-    //{
-    //}
-    //else 
-    //{
-    //    memset(rp, 0, );
-    //    memcpy(rp, ap + );
-    //}
 }
 
 /*****************************************************************************
