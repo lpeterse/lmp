@@ -60,11 +60,20 @@ void lmp_mul_mn(
  * Shift operations
  *****************************************************************************/
 
- size_t lmp_lshift_size(
+size_t lmp_lshift_size(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bits);
 
- void lmp_lshift(
+void lmp_lshift(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits);
+
+size_t lmp_rshift_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+                                         const size_t bits);
+
+void lmp_rshift(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bits);
