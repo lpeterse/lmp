@@ -31,10 +31,19 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "lmp.h"
 
+#include "stdio.h"
+
 #define likely(x)               __builtin_expect(!!(x), 1)
 #define unlikely(x)             __builtin_expect(!!(x), 0)
 #define MIN(x,y)                (x > y ? y : x)
 #define MAX(x,y)                (x > y ? x : y)
+
+#ifdef LMP_ASSERT
+    #include <assert.h>
+    #define ASSERT(x)           assert(x)
+#else
+    #define ASSERT(x)           __builtin_assume(x)
+#endif
 
 #if __WORDSIZE == 64 || __WORDSIZE == 32
     #define POPCOUNT(x)         __builtin_popcountl(x)
@@ -97,8 +106,8 @@ void lmp_mul_mn(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {
-    __builtin_assume(an > 1);
-    __builtin_assume(bn > 1);
+    ASSERT(an > 1);
+    ASSERT(bn > 1);
 
     lmp_dlimb_t ab;
     lmp_limb_t addc, mulc = 0;
@@ -145,53 +154,58 @@ void lmp_lshift(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bits)
 {
-    const size_t sl = bits / LMP_LIMB_W;
-    const size_t sb = bits % LMP_LIMB_W;
-    const int is_shift_by_words = !sb;
+    ASSERT(rn > 0);
+    ASSERT(an > 0);
+    ASSERT(rn >= an);
+
+    const int is_shift_by_words = !(bits % LMP_LIMB_W);
     const int is_shift_by_bytes = !(bits % 8) && is_little_endian();
-    if (!rn) {
-        // Do nothing.
-    } else if (is_shift_by_words) {
-        // This optimisation does a wordsize aligned memcpy and
-        // is eventually vectorized.
-        const size_t len1 = bits / 8;
-        const size_t len2 = rn * LMP_LIMB_S - len1;
-        memset(rp, 0, len1);
-        memcpy(((char *)rp) + len1, ap, len2);
-    } else if (is_shift_by_bytes) {
-        // Doing a memcpy to implement the shift is only allowed if
-        // the machine is little endian (due to memory representation).
-        const lmp_limb_t x = ap[an - 1] << sb;
-        const lmp_limb_t y = ap[an - 1] >> (LMP_LIMB_W - sb);
+
+    // This optimisation does a wordsize aligned memcpy and
+    // is eventually vectorized.
+    if (is_shift_by_words) {
+        memset(rp, 0, bits / 8);
+        memcpy((char*)rp + bits / 8, ap, rn * LMP_LIMB_S - bits / 8);
+        return;
+    }
+
+    // Doing a memcpy to implement the shift is only allowed if
+    // the machine is little endian (due to memory representation).
+    if (is_shift_by_bytes) {
+        const lmp_limb_t z = ap[an - 1];
+        const lmp_limb_t x = z << (bits % LMP_LIMB_W);
+        const lmp_limb_t y = z >> (LMP_LIMB_W - bits % LMP_LIMB_W);
         if (y) {
             rp[rn - 2] = x;
             rp[rn - 1] = y;
         } else {
             rp[rn - 1] = x;
         }
-        const size_t len1 = bits / 8;
-        const size_t len2 = (an - 1) * LMP_LIMB_S;
-        memset(rp, 0, len1);
-        memcpy(((char *)rp) + len1, ap, len2);
-    } else {
-        // Generic case:
-        //   - initialise the lower limbs with 0
-        //   - word-wise copy and shift from ap
-        //   - the highest limb is only assigned when its non-zero
-        lmp_limb_t x;
-        lmp_limb_t y = 0;
-        for (size_t ri = 0; ri < sl; ri++) {
-            rp[ri] = 0;
-        }
-        for (size_t ai = 0; ai < an; ai++) {
-            x = ap[ai] << sb;
-            rp[ai + sl] = x | y;
-            y = ap[ai] >> (LMP_LIMB_W - sb);
-        }
-        if (y) {
-            rp[rn - 1] = y;
-        }
+        memset(rp, 0, bits / 8);
+        memcpy((char*)rp + bits / 8, ap, (an - 1) * LMP_LIMB_S);
+        return;
     }
+
+    // Generic case:
+    //   - initialise the lower limbs with 0
+    //   - word-wise copy and shift from ap
+    //   - the highest limb is only assigned when its non-zero
+    lmp_limb_t x;
+    lmp_limb_t y = 0;
+    const size_t sl = bits / LMP_LIMB_W;
+    const size_t sb = bits % LMP_LIMB_W;
+    for (size_t ri = 0; ri < sl; ri++) {
+        rp[ri] = 0;
+    }
+    for (size_t ai = 0; ai < an; ai++) {
+        x = ap[ai] << sb;
+        rp[ai + sl] = x | y;
+        y = ap[ai] >> (LMP_LIMB_W - sb);
+    }
+    if (y) {
+        rp[rn - 1] = y;
+    }
+    return;
 }
 
 size_t lmp_rshift_size(
@@ -268,6 +282,8 @@ void lmp_xor_mn(
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp)
 {
+    ASSERT(rn > 0);
+
     for(size_t ri = 0;  ri < rn; ri++) {
         rp[ri] = ap[ri] ^ bp[ri];
     }

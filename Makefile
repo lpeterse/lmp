@@ -29,8 +29,8 @@ lmp.a: lmp.o
 lmp.so: lmp.c lmp.h
 	$(CC) $(CFLAGS) -shared $< -o $@
 
-lmp_test.out: lmp_test.c lmp.o
-	$(CC) $(CFLAGS) $^ -o $@
+lmp_test.out: lmp_test.c lmp.c lmp.h
+	$(CC) $(CFLAGS) -DLMP_ASSERT $< lmp.c -o $@
 
 lmp_bench.out: lmp_bench.c lmp.o
 	$(CC) $(CFLAGS) $^ -lbsdnt -lgmp -o $@
