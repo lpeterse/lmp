@@ -47,5 +47,5 @@ static void lmp_test_mul_mn_0001(void) {
 }
 
 int main(void) {
-    //lmp_test_mul_nm_0001();
+    //lmp_test_mul_mn_0001();
 }
