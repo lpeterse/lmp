@@ -149,8 +149,8 @@ void lmp_lshift(
 {
     const size_t sl = bits / LMP_LIMB_W;
     const size_t sb = bits % LMP_LIMB_W;
-    const bool is_shift_by_words = !sb;
-    const bool is_shift_by_bytes = !(bits % 8) && is_little_endian();
+    const int is_shift_by_words = !sb;
+    const int is_shift_by_bytes = !(bits % 8) && is_little_endian();
     if (!rn) {
         // Do nothing.
     } else if (is_shift_by_words) {
@@ -210,8 +210,8 @@ void lmp_rshift(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bits)
 {
-    const bool is_shift_by_words = !(bits % LMP_LIMB_W);
-    const bool is_shift_by_bytes = !(bits % 8) && is_little_endian();
+    const int is_shift_by_words = !(bits % LMP_LIMB_W);
+    const int is_shift_by_bytes = !(bits % 8) && is_little_endian();
     if (!rn) {
         // Do nothing.
     } else if (is_shift_by_words) {

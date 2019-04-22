@@ -1,7 +1,8 @@
 .PHONY: asm bench test clean
 
+AR     := ar
 CC     := clang
-CFLAGS := -Wall -O2
+CFLAGS := -Wall -O2 -fPIC
 
 # PHONY targets
 
@@ -21,6 +22,12 @@ clean:
 
 lmp.o: lmp.c lmp.h
 	$(CC) $(CFLAGS) -c $<
+
+lmp.a: lmp.o
+	$(AR) rcs $@ $<
+
+lmp.so: lmp.c lmp.h
+	$(CC) $(CFLAGS) -shared $< -o $@
 
 lmp_test.out: lmp_test.c lmp.o
 	$(CC) $(CFLAGS) $^ -o $@

@@ -29,12 +29,16 @@ POSSIBILITY OF SUCH DAMAGE.
 
  */
 
+#ifndef LMP_H
+#define LMP_H
+
 #include <stdint.h>
-#include <stdlib.h>
 #include <limits.h>
 #include <string.h>
-#include <stdbool.h>
-#include <time.h>
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 #define LIMB_MIN         LMP_LIMB_C(0x0000000000000000)
 #define LIMB_MIN_PP      LMP_LIMB_C(0x0000000000000001)
@@ -165,3 +169,9 @@ void lmp_clearbit(
 size_t lmp_popcount(
     const lmp_limb_t *const restrict ap, const size_t an);
 
+
+#ifdef __cplusplus
+ }
+#endif
+
+#endif /* LMP_H */
