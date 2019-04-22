@@ -328,6 +328,3 @@ size_t lmp_popcount(
     }
     return count;
 }
-
-
-
