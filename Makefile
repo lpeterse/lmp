@@ -1,29 +1,29 @@
-.PHONY: asm clean bench
+.PHONY: asm bench test clean
 
 CC     := clang
-CFLAGS := -Wall -O3
+CFLAGS := -Wall -O2
 
-bench: lmp.o bench.c test test-bsdnt
-	$(CC) $(CFLAGS) bench.c lmp.o -lbsdnt -o bench
-	./test
-	./test-bsdnt
-	./bench
+# PHONY targets
 
-test: lmp.o test.o
-	$(CC) $(CFLAGS) lmp.o test.c -o test
+bench: lmp_bench.out
+	./$<
 
-test-bsdnt: lmp.o test-bsdnt.o
-	$(CC) $(CFLAGS) lmp.o test-bsdnt.c -lbsdnt -o test-bsdnt
-
-lmp.o: lmp.c lmp.h
-	$(CC) $(CFLAGS) -c lmp.c
-
-test.o: test.c
-	$(CC) $(CFLAGS) -c test.c
+test: lmp_test.out
+	./$<
 
 asm: lmp.o
-	gdb lmp.o -batch -ex 'disassemble ${FUNCTION}'
+	gdb $< -batch -ex 'disassemble ${FUNCTION}'
 
 clean:
-	rm -rf *.o test
+	rm -rf *.o *.out
 
+# Other targets
+
+lmp.o: lmp.c lmp.h
+	$(CC) $(CFLAGS) -c $<
+
+lmp_test.out: lmp_test.c lmp.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+lmp_bench.out: lmp_bench.c lmp.o
+	$(CC) $(CFLAGS) $^ -lbsdnt -lgmp -o $@
