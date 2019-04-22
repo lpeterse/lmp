@@ -165,7 +165,7 @@ void lmp_lshift(
     // is eventually vectorized.
     if (is_shift_by_words) {
         memset(rp, 0, bits / 8);
-        memcpy((char*)rp + bits / 8, ap, rn * LMP_LIMB_S - bits / 8);
+        memcpy((char*)rp + bits / 8, ap, an * LMP_LIMB_S);
         return;
     }
 
@@ -190,20 +190,18 @@ void lmp_lshift(
     //   - initialise the lower limbs with 0
     //   - word-wise copy and shift from ap
     //   - the highest limb is only assigned when its non-zero
-    lmp_limb_t x;
-    lmp_limb_t y = 0;
     const size_t sl = bits / LMP_LIMB_W;
     const size_t sb = bits % LMP_LIMB_W;
     for (size_t ri = 0; ri < sl; ri++) {
         rp[ri] = 0;
     }
+    lmp_limb_t carry = 0;
     for (size_t ai = 0; ai < an; ai++) {
-        x = ap[ai] << sb;
-        rp[ai + sl] = x | y;
-        y = ap[ai] >> (LMP_LIMB_W - sb);
+        rp[ai - sl] = (ap[ai] << sb) | carry;
+        carry = ap[ai] >> (LMP_LIMB_W - sb);
     }
-    if (y) {
-        rp[rn - 1] = y;
+    if (carry) {
+        rp[rn - 1] = carry;
     }
     return;
 }
