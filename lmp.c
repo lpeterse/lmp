@@ -31,17 +31,15 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "lmp.h"
 
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
-#define MIN(x,y)       (x > y ? y : x)
-#define MAX(x,y)       (x > y ? x : y)
+#define likely(x)               __builtin_expect(!!(x), 1)
+#define unlikely(x)             __builtin_expect(!!(x), 0)
+#define MIN(x,y)                (x > y ? y : x)
+#define MAX(x,y)                (x > y ? x : y)
 
-
-#if __WORDSIZE == 64
-#define POPCOUNT(x) __builtin_popcountl(x)
-#define CLZ(x) __builtin_clzl(x)
-#define FFS(x) __builtin_ffsl(x)
-
+#if __WORDSIZE == 64 || __WORDSIZE == 32
+    #define POPCOUNT(x)         __builtin_popcountl(x)
+    #define CLZ(x)              __builtin_clzl(x)
+    #define ADDC(x,y,ci,co)     __builtin_addcl(x,y,ci,co)
 #endif
 
 // This determines in pure C whether the machine is little endian.
@@ -91,7 +89,7 @@ size_t lmp_mul_mn_size(
     lmp_limb_t a = ap[an - 1];
     lmp_limb_t b = bp[bn - 1];
 
-    return an + bn - (LMP_MSB(a) + LMP_MSB(b) + 1 < LMP_LIMB_W);
+    return an + bn - ((LMP_LIMB_W - 1 - CLZ(a)) + (LMP_LIMB_W - 1 - CLZ(b)) + 1 < LMP_LIMB_W);
 }
 
 void lmp_mul_mn(
@@ -118,7 +116,7 @@ void lmp_mul_mn(
         {
             ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
             mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
-            rp[ai + bi] = LMP_ADDC(rp[ai+bi], (lmp_limb_t) ab, addc, &addc);
+            rp[ai + bi] = ADDC(rp[ai+bi],     (lmp_limb_t) ab, addc, &addc);
         }
         if (ai + 1 < an || mulc || addc)
         {
