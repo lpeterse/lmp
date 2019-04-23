@@ -71,6 +71,82 @@ static inline int is_little_endian() {
     return t == q;
 }
 
+/******************************************************************************
+ * Addition & Subtraction
+ *****************************************************************************/
+
+size_t lmp_add_mn_size(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    ASSERT(an > 0);
+    ASSERT(bn > 0);
+
+    const size_t n_min  = MIN(an, bn);
+    const size_t n_max  = MAX(an, bn);
+    const lmp_limb_t *const restrict l_max = an > bn ? ap : bp;
+    const lmp_limb_t *const restrict l_min = an > bn ? bp : ap;
+
+    size_t i = n_max - 1;
+    for (; i >= n_min; i--) {
+        if (l_max[i] != LMP_LIMB_MAX) {
+            // Overflow impossible independant of other limbs.
+            return n_max;
+        }
+        // Overflow depends on carry from lesser signifcant limbs. Continue...
+    }
+    lmp_limb_t carry;
+    for (; i > 0; i--) {
+        ADDC(l_max[i], l_min[i], LMP_LIMB_C(0), &carry);
+        if (carry) {
+            // Overflow inevitable independant of lesser significant limbs.
+            return n_max + 1;
+        }
+        ADDC(l_max[i], l_min[i], LMP_LIMB_C(1), &carry);
+        if (!carry) {
+            // Overflow impossible independant of other limbs.
+            return n_max;
+        }
+        // Overflow depends on carry from lesser signifcant limbs. Continue...
+    }
+    ADDC(l_max[i], l_min[i], LMP_LIMB_C(0), &carry);
+    return n_max + !!carry;
+}
+
+void lmp_add_mn(
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    ASSERT(an > 0);
+    ASSERT(bn > 0);
+
+    const size_t n_min  = MIN(an, bn);
+    const size_t n_max  = MAX(an, bn);
+    const lmp_limb_t *const restrict l_max = an > bn ? ap : bp;
+    const lmp_limb_t *const restrict l_min = an > bn ? bp : ap;
+
+    size_t i = 0;
+    lmp_limb_t carry = 0;
+
+    for (; i < n_min; i++) {
+        rp[i] = ADDC(l_max[i], l_min[i], carry, &carry);
+    }
+    for (; i < n_max && carry; i++) {
+        rp[i] = ADDC(l_max[i], LMP_LIMB_C(0), carry, &carry);
+    }
+    for (; i < n_max; i++) {
+        rp[i] = l_max[i];
+    }
+    if (carry) {
+        rp[n_max] = carry;
+    }
+}
+
+/******************************************************************************
+ * Multiplication
+ *****************************************************************************/
+
 void lmp_mul_m1(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,

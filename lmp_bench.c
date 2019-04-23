@@ -61,6 +61,38 @@ POSSIBILITY OF SUCH DAMAGE.
         }\
     }
 
+static void bench_add_mn_0001(void)
+{
+    size_t an = 300;
+    size_t bn = 210;
+
+    lmp_limb_t ap[an];
+    lmp_limb_t bp[bn];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, an);
+    nn_random(bp, rnd, bn);
+    size_t rn = lmp_add_mn_size(ap, an, bp, bn);
+    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
+
+    BENCH("LMP", {
+        lmp_add_mn(rp0, ap, an, bp, bn);
+    });
+    BENCH("GMP", {
+        lmp_limb_t carry = mpn_add(rp1, ap, an, bp, bn);
+        if (carry) rp1[rn - 1] = carry;
+    });
+    BENCH("BSDNT", {
+        lmp_limb_t carry = nn_add(rp2, ap, an, bp, bn);
+        if (carry) rp1[rn - 1] = carry;
+    });
+
+    for (size_t i = 0; i < rn; i++) {
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
+    }
+}
+
 static void bench_mul_mn_0001(void)
 {
     size_t an = 300;
@@ -103,7 +135,7 @@ static void bench_mul_mn_0001(void)
     });
 
     for (size_t i = 0; i < rn; i++) {
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT (best)",      rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",               rp1[i]);
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT (best)",      rp2[i]);
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT (classic)",   rp3[i]);
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT (karatsuba)", rp4[i]);
@@ -258,6 +290,8 @@ static void bench_xor_0001(void)
 
 int main()
 {
+    bench_add_mn_0001();
+    puts("");
     bench_mul_mn_0001();
     puts("");
     bench_lshift_0001();
