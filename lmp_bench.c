@@ -52,7 +52,7 @@ POSSIBILITY OF SUCH DAMAGE.
             td.tv_sec = t2.tv_sec - t1.tv_sec; \
             td.tv_nsec = t2.tv_nsec - t1.tv_nsec; \
         } \
-        printf("%-20s %-20s %lld.%.9lds\n", __FUNCTION__, impl, (long long) td.tv_sec, td.tv_nsec); \
+        printf("  %-20s %lld.%.9lds\n", impl, (long long) td.tv_sec, td.tv_nsec); \
     }
 #define ASSERT_LIMB_EQUAL(i, n1, v1, n2, v2) {\
         if ((v1) != (v2)) {\
@@ -63,8 +63,42 @@ POSSIBILITY OF SUCH DAMAGE.
 
 static void bench_add_mn_0001(void)
 {
-    size_t an = 300;
-    size_t bn = 210;
+    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    size_t an = 3000;
+    size_t bn = 3000;
+
+    lmp_limb_t ap[an];
+    lmp_limb_t bp[bn];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, an);
+    nn_random(bp, rnd, bn);
+    size_t rn = lmp_add_mn_size(ap, an, bp, bn);
+    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
+
+    BENCH("LMP", {
+        lmp_add_mn(rp0, ap, an, bp, bn);
+    });
+    BENCH("GMP", {
+        lmp_limb_t carry = mpn_add(rp1, ap, an, bp, bn);
+        if (carry) rp1[rn - 1] = carry;
+    });
+    BENCH("BSDNT", {
+        lmp_limb_t carry = nn_add(rp2, ap, an, bp, bn);
+        if (carry) rp1[rn - 1] = carry;
+    });
+
+    for (size_t i = 0; i < rn; i++) {
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
+    }
+}
+
+static void bench_add_mn_0002(void)
+{
+    printf("\n%s: r = a + b where an = 3000, bn = 100\n", __FUNCTION__);
+    size_t an = 3000;
+    size_t bn = 100;
 
     lmp_limb_t ap[an];
     lmp_limb_t bp[bn];
@@ -95,6 +129,7 @@ static void bench_add_mn_0001(void)
 
 static void bench_mul_mn_0001(void)
 {
+    printf("\n%s: r = a * b where an = 300, bn = 210\n", __FUNCTION__);
     size_t an = 300;
     size_t bn = 210;
 
@@ -145,6 +180,7 @@ static void bench_mul_mn_0001(void)
 
 static void bench_lshift_0001(void)
 {
+    printf("\n%s: r = a << 23 where an = 300\n", __FUNCTION__);
     size_t an = 300;
     size_t bits = 23;
 
@@ -177,6 +213,7 @@ static void bench_lshift_0001(void)
 
 static void bench_lshift_0002(void)
 {
+    printf("\n%s: r = a << 16 where an = 300\n", __FUNCTION__);
     size_t an = 300;
     size_t bits = 16;
 
@@ -209,6 +246,7 @@ static void bench_lshift_0002(void)
 
 static void bench_rshift_0001(void)
 {
+    printf("\n%s: r = a >> 23 where an = 300\n", __FUNCTION__);
     size_t an = 300;
     size_t bits = 23;
 
@@ -234,6 +272,7 @@ static void bench_rshift_0001(void)
 
 static void bench_rshift_0002(void)
 {
+    printf("\n%s: r = a >> 16 where an = 300\n", __FUNCTION__);
     size_t an = 300;
     size_t bits = 16;
 
@@ -259,6 +298,7 @@ static void bench_rshift_0002(void)
 
 static void bench_xor_0001(void)
 {
+    printf("\n%s: r = a ^ b where an = bn = 300\n", __FUNCTION__);
     size_t n = 300;
 
     lmp_limb_t ap[n];
@@ -291,17 +331,11 @@ static void bench_xor_0001(void)
 int main()
 {
     bench_add_mn_0001();
-    puts("");
+    bench_add_mn_0002();
     bench_mul_mn_0001();
-    puts("");
     bench_lshift_0001();
-    puts("");
     bench_lshift_0002();
-    puts("");
     bench_rshift_0001();
-    puts("");
     bench_rshift_0002();
-    puts("");
     bench_xor_0001();
-    puts("");
 }

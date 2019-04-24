@@ -121,25 +121,30 @@ void lmp_add_mn(
     ASSERT(an > 0);
     ASSERT(bn > 0);
 
-    const size_t n_min  = MIN(an, bn);
-    const size_t n_max  = MAX(an, bn);
-    const lmp_limb_t *const restrict l_max = an > bn ? ap : bp;
-    const lmp_limb_t *const restrict l_min = an > bn ? bp : ap;
+    if (bn > an) {
+        lmp_add_mn(rp, bp, bn, ap, an);
+        return;
+    }
 
     size_t i = 0;
-    lmp_limb_t carry = 0;
-
-    for (; i < n_min; i++) {
-        rp[i] = ADDC(l_max[i], l_min[i], carry, &carry);
+    lmp_dlimb_t t = 0;
+    for (; i < bn; i++) {
+        t += (lmp_dlimb_t) ap[i];
+        t += (lmp_dlimb_t) bp[i];
+        rp[i] = (lmp_limb_t) t;
+        t >>= LMP_LIMB_W;
     }
-    for (; i < n_max && carry; i++) {
-        rp[i] = ADDC(l_max[i], LMP_LIMB_C(0), carry, &carry);
+    for (; i < an && t; i++) {
+        t += (lmp_dlimb_t) ap[i];
+        rp[i] = (lmp_limb_t) t;
+        t >>= LMP_LIMB_W;
     }
-    for (; i < n_max; i++) {
-        rp[i] = l_max[i];
-    }
-    if (carry) {
-        rp[n_max] = carry;
+    if (t) {
+        rp[an] = 1;
+    } else {
+        for (; i < an; i++) {
+            rp[i] = ap[i];
+        }
     }
 }
 

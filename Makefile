@@ -2,7 +2,7 @@
 
 AR     := ar
 CC     := clang
-CFLAGS := -Wall -O2 -fPIC
+CFLAGS := -Wall -O2 #-fno-unroll-loops
 
 # PHONY targets
 
