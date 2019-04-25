@@ -41,8 +41,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifdef LMP_ASSERT
     #include <assert.h>
     #define ASSERT(x)           assert(x)
-#else
+#elif defined(__clang__)
     #define ASSERT(x)           __builtin_assume(x)
+#else
+    #define ASSERT(x)
 #endif
 
 #if __WORDSIZE == 64 || __WORDSIZE == 32
@@ -82,35 +84,33 @@ size_t lmp_add_mn_size(
     ASSERT(an > 0);
     ASSERT(bn > 0);
 
-    const size_t n_min  = MIN(an, bn);
-    const size_t n_max  = MAX(an, bn);
-    const lmp_limb_t *const restrict l_max = an > bn ? ap : bp;
-    const lmp_limb_t *const restrict l_min = an > bn ? bp : ap;
+    if (bn > an) {
+        return lmp_add_mn_size(bp, bn, ap, an);
+    }
 
-    size_t i = n_max - 1;
-    for (; i >= n_min; i--) {
-        if (l_max[i] != LMP_LIMB_MAX) {
+    size_t i = an - 1;
+    for (; i >= bn; i--) {
+        if (ap[i] != LMP_LIMB_MAX) {
             // Overflow impossible independant of other limbs.
-            return n_max;
+            return an;
         }
         // Overflow depends on carry from lesser signifcant limbs. Continue...
     }
-    lmp_limb_t carry;
     for (; i > 0; i--) {
-        ADDC(l_max[i], l_min[i], LMP_LIMB_C(0), &carry);
-        if (carry) {
+        lmp_limb_t a = ap[i];
+        lmp_limb_t b = bp[i];
+        lmp_limb_t c = a + b;
+        if (c < a) {
             // Overflow inevitable independant of lesser significant limbs.
-            return n_max + 1;
+            return an + 1;
         }
-        ADDC(l_max[i], l_min[i], LMP_LIMB_C(1), &carry);
-        if (!carry) {
+        if (c != LMP_LIMB_MAX) {
             // Overflow impossible independant of other limbs.
-            return n_max;
+            return an;
         }
         // Overflow depends on carry from lesser signifcant limbs. Continue...
     }
-    ADDC(l_max[i], l_min[i], LMP_LIMB_C(0), &carry);
-    return n_max + !!carry;
+    return an + (ap[0] + bp[0] < ap[0]);
 }
 
 void lmp_add_mn(
