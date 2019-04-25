@@ -74,6 +74,33 @@ static inline int is_little_endian() {
 }
 
 /******************************************************************************
+ * Compare
+ *****************************************************************************/
+
+int lmp_cmp_mn(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    if (an > bn) {
+        return 1;
+    }
+    if (an < bn) {
+        return -1;
+    }
+    for (size_t i = an - 1; i >= 0; i--) {
+        const lmp_limb_t a = ap[i];
+        const lmp_limb_t b = bp[i];
+        if (a > b) {
+            return 1;
+        }
+        if (a < b) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/******************************************************************************
  * Addition & Subtraction
  *****************************************************************************/
 
@@ -94,21 +121,21 @@ size_t lmp_add_mn_size(
             // Overflow impossible independant of other limbs.
             return an;
         }
-        // Overflow depends on carry from lesser signifcant limbs. Continue...
+        // Overflow depends on carry from less signifcant limbs. Continue...
     }
     for (; i > 0; i--) {
         lmp_limb_t a = ap[i];
         lmp_limb_t b = bp[i];
         lmp_limb_t c = a + b;
         if (c < a) {
-            // Overflow inevitable independant of lesser significant limbs.
+            // Overflow inevitable independant of less significant limbs.
             return an + 1;
         }
         if (c != LMP_LIMB_MAX) {
             // Overflow impossible independant of other limbs.
             return an;
         }
-        // Overflow depends on carry from lesser signifcant limbs. Continue...
+        // Overflow depends on carry from less signifcant limbs. Continue...
     }
     return an + (ap[0] + bp[0] < ap[0]);
 }

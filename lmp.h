@@ -64,6 +64,18 @@ POSSIBILITY OF SUCH DAMAGE.
     #error "unexpected machine word size"
 #endif
 
+/*****************************************************************************
+ * Compare
+ *****************************************************************************/
+
+int lmp_cmp_mn(
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
+/*****************************************************************************
+ * Addition
+ *****************************************************************************/
+
 size_t lmp_add_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
