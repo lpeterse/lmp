@@ -21,7 +21,7 @@ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+diffSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
 INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
@@ -53,6 +53,81 @@ POSSIBILITY OF SUCH DAMAGE.
             exit(1); \
         }\
     }
+
+/*****************************************************************************
+ * Addition & difftraction
+ *****************************************************************************/
+
+static void lmp_test_diff_mn_size_0001(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 0L, lmp_diff_mn_size(ap, 1, bp, 1));
+}
+
+static void lmp_test_diff_mn_size_0002(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 1L, lmp_diff_mn_size(ap, 1, bp, 1));
+    ASSERT_SIZE_EQUAL("qn", 1L, lmp_diff_mn_size(bp, 1, ap, 1));
+}
+
+static void lmp_test_diff_mn_size_0003(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(0), LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 1L, lmp_diff_mn_size(ap, 2, bp, 2));
+    ASSERT_SIZE_EQUAL("qn", 1L, lmp_diff_mn_size(bp, 2, ap, 2));
+}
+
+static void lmp_test_diff_mn_size_0004(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 2L, lmp_diff_mn_size(ap, 2, bp, 2));
+    ASSERT_SIZE_EQUAL("qn", 2L, lmp_diff_mn_size(bp, 2, ap, 2));
+}
+
+static void lmp_test_diff_mn_size_0005(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(2), LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 2L, lmp_diff_mn_size(ap, 2, bp, 2));
+}
+
+static void lmp_test_diff_mn_size_0006(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(2), LMP_LIMB_C(1) };
+    ASSERT_SIZE_EQUAL("rn", 1L, lmp_diff_mn_size(ap, 2, bp, 2));
+    ASSERT_SIZE_EQUAL("qn", 1L, lmp_diff_mn_size(bp, 2, ap, 2));
+}
+
+static void lmp_test_diff_mn_size_0007(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2), LMP_LIMB_C(3) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(0), LMP_LIMB_C(3) };
+    ASSERT_SIZE_EQUAL("rn", 2L, lmp_diff_mn_size(ap, 3, bp, 3));
+    ASSERT_SIZE_EQUAL("qn", 2L, lmp_diff_mn_size(bp, 3, ap, 3));
+}
+
+static void lmp_test_diff_mn_size_0008(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2), LMP_LIMB_C(3) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1), LMP_LIMB_C(3) };
+    ASSERT_SIZE_EQUAL("rn", 2L, lmp_diff_mn_size(ap, 3, bp, 3));
+    ASSERT_SIZE_EQUAL("qn", 2L, lmp_diff_mn_size(bp, 3, ap, 3));
+}
+
+static void lmp_test_diff_mn_size_0009(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2), LMP_LIMB_C(3) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(2), LMP_LIMB_C(1), LMP_LIMB_C(3) };
+    ASSERT_SIZE_EQUAL("rn", 1L, lmp_diff_mn_size(ap, 3, bp, 3));
+    ASSERT_SIZE_EQUAL("qn", 1L, lmp_diff_mn_size(bp, 3, ap, 3));
+}
+
 
 /*****************************************************************************
  * Multiplication
@@ -690,10 +765,21 @@ static void lmp_test_popcount_0002(void)
  *****************************************************************************/
 
 int main(void) {
+    lmp_test_diff_mn_size_0001();
+    lmp_test_diff_mn_size_0002();
+    lmp_test_diff_mn_size_0003();
+    lmp_test_diff_mn_size_0004();
+    lmp_test_diff_mn_size_0005();
+    lmp_test_diff_mn_size_0006();
+    lmp_test_diff_mn_size_0007();
+    lmp_test_diff_mn_size_0008();
+    lmp_test_diff_mn_size_0009();
+
     lmp_test_mul_mn_0001();
     lmp_test_mul_mn_0002();
     lmp_test_mul_mn_0003();
 
+/*
     lmp_test_lshift_size_0001();
     lmp_test_lshift_size_0002();
     lmp_test_lshift_size_0003();
@@ -762,5 +848,5 @@ int main(void) {
     lmp_test_clearbit_0002();
 
     lmp_test_popcount_0001();
-    lmp_test_popcount_0002();
+    lmp_test_popcount_0002(); */
 }

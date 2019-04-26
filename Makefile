@@ -1,10 +1,12 @@
-.PHONY: asm bench test clean
+.PHONY: all asm bench test clean
 
 AR     := ar
 CC     := clang
 CFLAGS := -Wall -O2 #-fno-unroll-loops
 
 # PHONY targets
+
+all: test bench
 
 bench: lmp_bench.out
 	./$<
@@ -20,16 +22,18 @@ clean:
 
 # Other targets
 
-lmp.o: lmp.c lmp.h
+lmp.c: lmp.h
+
+lmp.o: lmp.c
 	$(CC) $(CFLAGS) -c $<
 
 lmp.a: lmp.o
 	$(AR) rcs $@ $<
 
-lmp.so: lmp.c lmp.h
+lmp.so: lmp.c
 	$(CC) $(CFLAGS) -shared $< -o $@
 
-lmp_test.out: lmp_test.c lmp.c lmp.h
+lmp_test.out: lmp_test.c lmp.c
 	$(CC) $(CFLAGS) -DLMP_ASSERT $< lmp.c -o $@
 
 lmp_bench.out: lmp_bench.c lmp.o
