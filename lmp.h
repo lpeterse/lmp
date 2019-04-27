@@ -89,6 +89,11 @@ size_t lmp_diff_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
 
+void lmp_sub_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn);
+
 /*****************************************************************************
  * Multiplication
  *****************************************************************************/

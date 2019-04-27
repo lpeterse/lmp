@@ -73,6 +73,13 @@ static inline int is_little_endian() {
     return t == q;
 }
 
+static inline lmp_limb_t subc(lmp_limb_t x, lmp_limb_t y, lmp_limb_t *c) {
+    ASSERT(*c <= 1);
+    lmp_limb_t d = x - y - *c;
+    *c = d > x;
+    return d;
+}
+
 /******************************************************************************
  * Compare
  *****************************************************************************/
@@ -226,6 +233,32 @@ size_t lmp_diff_mn_size(
     ASSERT(an == bn);
 
     return lmp_diff_nn_size(ap, bp, an);
+}
+
+
+
+void lmp_sub_mn(
+          lmp_limb_t *const restrict rp, const size_t rn,
+    const lmp_limb_t *const restrict ap, const size_t an,
+    const lmp_limb_t *const restrict bp, const size_t bn)
+{
+    ASSERT(an > 0);
+    ASSERT(bn > 0);
+    ASSERT(an >= bn);
+    ASSERT(rn > 0);
+
+    size_t i = 0;
+    lmp_limb_t c = 0;
+    for (; i < MIN(rn, bn); i++) {
+        rp[i] = subc(ap[i], bp[i], &c);
+    }
+    for (; i < rn && c; i++) {
+        rp[i] = ap[i] - 1;
+        c = !ap[i];
+    }
+    for (; i < rn; i++) {
+        rp[i] = ap[i];
+    }
 }
 
 
