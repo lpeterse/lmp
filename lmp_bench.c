@@ -146,11 +146,11 @@ static void bench_sub_mn_0001(void)
         lmp_sub_mn(rp0, rn, ap, an, bp, bn);
     });
     BENCH("GMP", {
-        lmp_limb_t carry = mpn_sub(rp1, ap, an, bp, bn);
+        mpn_sub(rp1, ap, an, bp, bn);
         //if (carry) rp1[rn - 1] = carry;
     });
     BENCH("BSDNT", {
-        lmp_limb_t carry = nn_sub(rp2, ap, an, bp, bn);
+        nn_sub(rp2, ap, an, bp, bn);
         //if (carry) rp1[rn - 1] = carry;
     });
 

@@ -169,19 +169,18 @@ void lmp_add_mn(
     }
 
     size_t i = 0;
-    lmp_dlimb_t t = 0;
+    lmp_limb_t c = 0;
     for (; i < bn; i++) {
-        t += (lmp_dlimb_t) ap[i];
-        t += (lmp_dlimb_t) bp[i];
-        rp[i] = (lmp_limb_t) t;
-        t >>= LMP_LIMB_W;
+        lmp_dlimb_t x = (lmp_dlimb_t) ap[i] + (lmp_dlimb_t) bp[i] + c;
+        rp[i] = (lmp_limb_t) x;
+        c = (lmp_limb_t) (x >> LMP_LIMB_W);
     }
-    for (; i < an && t; i++) {
-        t += (lmp_dlimb_t) ap[i];
-        rp[i] = (lmp_limb_t) t;
-        t >>= LMP_LIMB_W;
+    for (; i < an && c; i++) {
+        lmp_dlimb_t x = (lmp_dlimb_t) ap[i] + c;
+        rp[i] = (lmp_limb_t) x;
+        c = (lmp_limb_t) (x >> LMP_LIMB_W);
     }
-    if (t) {
+    if (c) {
         rp[an] = 1;
     } else {
         for (; i < an; i++) {
