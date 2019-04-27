@@ -73,6 +73,14 @@ static inline int is_little_endian() {
     return t == q;
 }
 
+static inline lmp_limb_t addc(lmp_limb_t x, lmp_limb_t y, lmp_limb_t ci, lmp_limb_t *co) {
+    ASSERT(ci <= 1);
+    lmp_limb_t d = x + y;
+    lmp_limb_t e = d + ci;
+    *co = e < x | d < x;
+    return e + ci;
+}
+
 static inline lmp_limb_t subc(lmp_limb_t x, lmp_limb_t y, lmp_limb_t *c) {
     ASSERT(*c <= 1);
     lmp_limb_t d = x - y - *c;
@@ -182,7 +190,7 @@ void lmp_add_mn(
     }
 }
 
-static inline size_t lmp_diff_xx_size(
+static inline size_t lmp_sub_xx_size(
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp, const size_t n)
 {
@@ -195,7 +203,7 @@ static inline size_t lmp_diff_xx_size(
     return n + 1;
 }
 
-static inline size_t lmp_diff_nn_size(
+static inline size_t lmp_sub_nn_size(
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp, const size_t n)
 {
@@ -203,14 +211,14 @@ static inline size_t lmp_diff_nn_size(
     for (size_t i = n; i > 1; i--) {
         const lmp_limb_t a = ap[i - 1];
         const lmp_limb_t b = bp[i - 1];
-        if (a == b + 1) return lmp_diff_xx_size(ap, bp, i - 1);
-        if (b == a + 1) return lmp_diff_xx_size(bp, ap, i - 1);
+        if (a == b + 1) return lmp_sub_xx_size(ap, bp, i - 1);
+        if (b == a + 1) return lmp_sub_xx_size(bp, ap, i - 1);
         if (a != b)     return i;
     }
     return ap[0] != bp[0];
 }
 
-size_t lmp_diff_mn_size(
+size_t lmp_sub_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {
@@ -224,43 +232,49 @@ size_t lmp_diff_mn_size(
         return bn;
     }
     if (an == bn + 1) {
-        return ap[an - 1] > 1 ? an : lmp_diff_xx_size(ap, bp, bn);
+        return ap[an - 1] > 1 ? an : lmp_sub_xx_size(ap, bp, bn);
     }
     if (bn == an + 1) {
-        return bp[bn - 1] > 1 ? bn : lmp_diff_xx_size(bp, ap, an);
+        return bp[bn - 1] > 1 ? bn : lmp_sub_xx_size(bp, ap, an);
     }
 
     ASSERT(an == bn);
 
-    return lmp_diff_nn_size(ap, bp, an);
+    return lmp_sub_nn_size(ap, bp, an);
 }
-
-
 
 void lmp_sub_mn(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {
+    ASSERT(rn > 0);
     ASSERT(an > 0);
     ASSERT(bn > 0);
     ASSERT(an >= bn);
-    ASSERT(rn > 0);
 
     size_t i = 0;
-    lmp_limb_t c = 0;
+    lmp_dlimb_t x = 0;
     for (; i < MIN(rn, bn); i++) {
-        rp[i] = subc(ap[i], bp[i], &c);
+        x += ap[i];
+        x &= LMP_LIMB_MAX; // ignore carry from previous addition
+        x -= bp[i];
+        rp[i] = (lmp_limb_t) x;
+        x >>= LMP_LIMB_W;
     }
-    for (; i < rn && c; i++) {
-        rp[i] = ap[i] - 1;
-        c = !ap[i];
+    if (x) {
+        for (; i < rn && !ap[i]; i++) {
+            rp[i] = LMP_LIMB_MAX;
+        }
+        if (i < rn) {
+            rp[i] = ap[i] - 1;
+            i++;
+        }
     }
     for (; i < rn; i++) {
         rp[i] = ap[i];
     }
 }
-
 
 /******************************************************************************
  * Multiplication

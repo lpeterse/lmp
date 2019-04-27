@@ -127,6 +127,39 @@ static void bench_add_mn_0002(void)
     }
 }
 
+static void bench_sub_mn_0001(void)
+{
+    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    size_t an = 3000;
+    size_t bn = 3000;
+
+    lmp_limb_t ap[an];
+    lmp_limb_t bp[bn];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, an);
+    nn_random(bp, rnd, bn);
+    size_t rn = 3000; //lmp_diff_mn_size(ap, an, bp, bn);
+    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
+
+    BENCH("LMP", {
+        lmp_sub_mn(rp0, rn, ap, an, bp, bn);
+    });
+    BENCH("GMP", {
+        lmp_limb_t carry = mpn_sub(rp1, ap, an, bp, bn);
+        //if (carry) rp1[rn - 1] = carry;
+    });
+    BENCH("BSDNT", {
+        lmp_limb_t carry = nn_sub(rp2, ap, an, bp, bn);
+        //if (carry) rp1[rn - 1] = carry;
+    });
+
+    for (size_t i = 0; i < rn - 1; i++) {
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
+    }
+}
+
 static void bench_mul_mn_0001(void)
 {
     printf("\n%s: r = a * b where an = 300, bn = 210\n", __FUNCTION__);
@@ -332,6 +365,7 @@ int main()
 {
     bench_add_mn_0001();
     bench_add_mn_0002();
+    bench_sub_mn_0001();
     bench_mul_mn_0001();
     bench_lshift_0001();
     bench_lshift_0002();

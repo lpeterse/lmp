@@ -2,7 +2,7 @@
 
 AR     := ar
 CC     := clang
-CFLAGS := -Wall -O2 #-fno-unroll-loops
+CFLAGS := -pedantic -fPIC -Wall -O2 -madx -mavx #-fno-unroll-loops
 
 # PHONY targets
 
@@ -37,4 +37,4 @@ lmp_test.out: lmp_test.c lmp.c
 	$(CC) $(CFLAGS) -DLMP_ASSERT $< lmp.c -o $@
 
 lmp_bench.out: lmp_bench.c lmp.o
-	$(CC) $(CFLAGS) $^ -lbsdnt -lgmp -o $@
+	$(CC) $(CFLAGS) $^ -s -lbsdnt -lgmp -o $@
