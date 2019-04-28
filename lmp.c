@@ -155,6 +155,24 @@ size_t lmp_add_mn_size(
     return an + (ap[0] + bp[0] < ap[0]);
 }
 
+lmp_limb_t lmp_addc_nn(
+          lmp_limb_t *const restrict rp,
+    const lmp_limb_t *const restrict ap,
+    const lmp_limb_t *const restrict bp, const size_t n, lmp_limb_t c)
+{
+    ASSERT(n > 0);
+    ASSERT(c <= 1);
+
+    for (size_t i = 0; i < n; i++) {
+        lmp_dlimb_t x = c;
+        x += ap[i];
+        x += bp[i];
+        rp[i] = (lmp_limb_t) x;
+        c = (lmp_limb_t) (x >> LMP_LIMB_W);
+    }
+    return c;
+}
+
 void lmp_add_mn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,

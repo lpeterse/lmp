@@ -61,34 +61,30 @@ POSSIBILITY OF SUCH DAMAGE.
         }\
     }
 
-static void bench_add_mn_0001(void)
+static void bench_addc_nn_0001(void)
 {
     printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
-    size_t an = 3000;
-    size_t bn = 3000;
-
-    lmp_limb_t ap[an];
-    lmp_limb_t bp[bn];
+    size_t n = 3000;
+    
+    lmp_limb_t ap[n];
+    lmp_limb_t bp[n];
     rand_t rnd;
     randinit(&rnd);
-    nn_random(ap, rnd, an);
-    nn_random(bp, rnd, bn);
-    size_t rn = lmp_add_mn_size(ap, an, bp, bn);
-    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
+    nn_random(ap, rnd, n);
+    nn_random(bp, rnd, n);
+    lmp_limb_t rp0[n], rp1[n], rp2[n];
 
     BENCH("LMP", {
-        lmp_add_mn(rp0, ap, an, bp, bn);
+        lmp_addc_nn(rp0, ap, bp, n, 0);
     });
     BENCH("GMP", {
-        lmp_limb_t carry = mpn_add(rp1, ap, an, bp, bn);
-        if (carry) rp1[rn - 1] = carry;
+        mpn_add(rp1, ap, n, bp, n);
     });
     BENCH("BSDNT", {
-        lmp_limb_t carry = nn_add(rp2, ap, an, bp, bn);
-        if (carry) rp1[rn - 1] = carry;
+        nn_add_mc(rp2, ap, bp, n, 0);
     });
 
-    for (size_t i = 0; i < rn; i++) {
+    for (size_t i = 0; i < n; i++) {
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
     }
@@ -363,7 +359,7 @@ static void bench_xor_0001(void)
 
 int main()
 {
-    bench_add_mn_0001();
+    bench_addc_nn_0001();
     bench_add_mn_0002();
     bench_sub_mn_0001();
     bench_mul_mn_0001();

@@ -85,6 +85,11 @@ void lmp_add_mn(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
 
+lmp_limb_t lmp_addc_nn(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t n, lmp_limb_t c);
+
 size_t lmp_diff_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
