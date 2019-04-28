@@ -588,12 +588,11 @@ void lmp_clearbit(
 }
 
 size_t lmp_popcount(
-    const lmp_limb_t *const restrict ap, const size_t an)
+    const lmp_limb_t *restrict ap, size_t an)
 {
     size_t count = 0;
-    for (size_t ai = 0; ai < an; ai++)
-    {
-        count += POPCOUNT(ap[ai]);
+    for (; an > 0; an--) {
+        count += POPCOUNT(ap[an - 1]);
     }
     return count;
 }

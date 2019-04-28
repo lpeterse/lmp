@@ -1,8 +1,8 @@
-.PHONY: all asm bench test clean
+.PHONY: all asm bench test clean cpuid
 
 AR     := ar
 CC     := clang
-CFLAGS := -pedantic -fPIC -g -Wall -O2 # -fno-unroll-loops
+CFLAGS := -pedantic -fPIC -g -Wall -O2 #-fno-unroll-loops
 
 # PHONY targets
 
@@ -19,6 +19,10 @@ asm: lmp.o
 
 clean:
 	rm -rf *.o *.out
+
+cpuid: lmp_cpuid.c
+	$(CC) $(CFLAGS) $< -o lmp_cpuid
+	./lmp_cpuid
 
 # Other targets
 

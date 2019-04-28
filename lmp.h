@@ -193,7 +193,7 @@ void lmp_clearbit(
                                          const size_t bi);
 
 size_t lmp_popcount(
-    const lmp_limb_t *const restrict ap, const size_t an);
+    const lmp_limb_t *restrict ap, size_t an);
 
 
 #ifdef __cplusplus

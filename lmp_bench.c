@@ -60,6 +60,13 @@ POSSIBILITY OF SUCH DAMAGE.
             exit(1); \
         }\
     }
+#define ASSERT_SIZE_EQUAL(value, expected) {\
+        if ((expected) != (value)) {\
+            printf ("%s failed: %s:\n  expected: %ld\n  actual:   %ld\n", \
+                __FUNCTION__, #value, expected, value); \
+            exit(1); \
+        }\
+    }
 
 static void bench_addc_nn_0001(void)
 {
@@ -90,11 +97,11 @@ static void bench_addc_nn_0001(void)
     }
 }
 
-static void bench_add_mn_0002(void)
+static void bench_add_mn_0001(void)
 {
-    printf("\n%s: r = a + b where an = 3000, bn = 100\n", __FUNCTION__);
+    printf("\n%s: r = a + b where an = 3000, bn = 2500\n", __FUNCTION__);
     size_t an = 3000;
-    size_t bn = 100;
+    size_t bn = 2500;
 
     lmp_limb_t ap[an];
     lmp_limb_t bp[bn];
@@ -357,10 +364,36 @@ static void bench_xor_0001(void)
     }
 }
 
+static void bench_popcount_0001(void)
+{
+    printf("\n%s: r = popcount(a) where an = 300\n", __FUNCTION__);
+    size_t n = 300;
+
+    lmp_limb_t ap[n];
+    size_t p1,p2,p3;
+
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, n);
+
+    BENCH("LMP", {
+        p1 = lmp_popcount(ap, n);
+    });
+    BENCH("GMP", {
+        p2 = mpn_popcount(ap, n);
+    });
+    BENCH("BSDNT", {
+        p3 = nn_popcount(ap, n);
+    });
+
+    ASSERT_SIZE_EQUAL(p1, p2);
+    ASSERT_SIZE_EQUAL(p1, p3);
+}
+
 int main()
 {
     bench_addc_nn_0001();
-    bench_add_mn_0002();
+    bench_add_mn_0001();
     bench_sub_mn_0001();
     bench_mul_mn_0001();
     bench_lshift_0001();
@@ -368,4 +401,5 @@ int main()
     bench_rshift_0001();
     bench_rshift_0002();
     bench_xor_0001();
+    bench_popcount_0001();
 }
