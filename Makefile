@@ -26,7 +26,8 @@ cpuid: lmp_cpuid.c
 
 # Other targets
 
-lmp.c: lmp.h
+lmp.c: lmp.h lmp_amd64.h
+	touch lmp.c
 
 lmp.o: lmp.c
 	$(CC) $(CFLAGS) -c $<

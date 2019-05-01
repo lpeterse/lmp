@@ -33,8 +33,39 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef __amd64__
 
+#define LMP_ADDC_NN
+lmp_limb_t lmp_addc_nn(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
+{
+   lmp_limb_t res;
 
+   __asm__ (
+    "   mov %[c], %[res]; \
+        jrcxz 3f; \
+        leaq (%[rp],%[m],8), %[rp]; \
+        leaq (%[ap],%[m],8), %[ap]; \
+        leaq (%[bp],%[m],8), %[bp]; \
+        neg %[m]; \
+        bt  $0, %[res]; \
+    1:; \
+        movq (%[ap],%[m],8), %[res]; \
+        adc (%[bp],%[m],8), %[res]; \
+        mov %[res], (%[rp],%[m],8); \
+        leaq 1(%[m]), %[m]; \
+        jrcxz 2f; \
+        jmp 1b; \
+    2:; \
+        setb %b[res]; \
+    3:;"
 
+   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m)
+   : [c] "r" (c)
+   : "cc", "memory"
+   );
 
+   return res;
+}
 
 #endif

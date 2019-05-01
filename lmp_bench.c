@@ -451,8 +451,8 @@ int main()
 {
     bench_cmp_mm_0001();
     bench_cmp_mm_0002();
-    //bench_addc_nn_0001();
-    //bench_add_mn_0001();
+    bench_addc_nn_0001();
+    bench_add_mn_0001();
     //bench_sub_mn_0001();
     //bench_mul_mn_0001();
     //bench_lshift_0001();
