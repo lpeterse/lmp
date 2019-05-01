@@ -77,11 +77,11 @@ static void bench_cmp_mm_0001(void)
     nn_random(bp, rnd, n);
     size_t r1, r2, r3;
 
-    BENCH("LMP", {
-        r1 = lmp_cmp_mm(ap, bp, n);
-    });
     BENCH("GMP", {
-        r2 = mpn_cmp(ap, bp, n);
+        r1 = mpn_cmp(ap, bp, n);
+    });
+    BENCH("LMP", {
+        r2 = lmp_cmp_mm(ap, bp, n);
     });
     BENCH("BSDNT", {
         r3 = nn_cmp_m(ap, bp, n);
@@ -105,11 +105,11 @@ static void bench_cmp_mm_0002(void)
     }
     size_t r1, r2, r3;
 
-    BENCH("LMP", {
-        r1 = lmp_cmp_mm(ap, bp, n);
-    });
     BENCH("GMP", {
-        r2 = mpn_cmp(ap, bp, n);
+        r1 = mpn_cmp(ap, bp, n);
+    });
+    BENCH("LMP", {
+        r2 = lmp_cmp_mm(ap, bp, n);
     });
     BENCH("BSDNT", {
         r3 = nn_cmp_m(ap, bp, n);
@@ -132,21 +132,25 @@ static void bench_addc_nn_0001(void)
     randinit(&rnd);
     nn_random(ap, rnd, n);
     nn_random(bp, rnd, n);
-    lmp_limb_t rp0[n], rp1[n], rp2[n];
+    lmp_limb_t rp0[n], rp1[n], rp2[n], rp3[n];
 
-    BENCH("LMP", {
-        lmp_addc_nn(rp0, ap, bp, n, 0);
-    });
     BENCH("GMP", {
-        mpn_add(rp1, ap, n, bp, n);
+        mpn_add(rp0, ap, n, bp, n);
+    });
+    BENCH("LMP", {
+        lmp_addc_mm(rp1, ap, bp, n, 0);
+    });
+    BENCH("LMP (generic)", {
+        lmp_addc_mm_gen(rp2, ap, bp, n, 0);
     });
     BENCH("BSDNT", {
-        nn_add_mc(rp2, ap, bp, n, 0);
+        nn_add_mc(rp3, ap, bp, n, 0);
     });
 
     for (size_t i = 0; i < n; i++) {
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
+        ASSERT_LIMB_EQUAL(i, "GMP", rp0[i], "LMP",             rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "GMP", rp0[i], "LMP (generic)",   rp2[i]);
+        ASSERT_LIMB_EQUAL(i, "GMP", rp0[i], "BSDNT",           rp3[i]);
     }
 }
 
@@ -163,27 +167,23 @@ static void bench_add_mn_0001(void)
     nn_random(ap, rnd, an);
     nn_random(bp, rnd, bn);
     size_t rn = lmp_add_mn_size(ap, an, bp, bn);
-    lmp_limb_t rp0[rn], rp1[rn], rp2[rn], rp3[rn];
+    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
 
-    BENCH("LMP", {
-        lmp_add_mn(rp0, ap, an, bp, bn);
-    });
     BENCH("GMP", {
-        lmp_limb_t carry = mpn_add(rp1, ap, an, bp, bn);
-        if (carry) rp1[rn - 1] = carry;
+        lmp_limb_t carry = mpn_add(rp0, ap, an, bp, bn);
+        if (carry) rp0[rn - 1] = carry;
+    });
+    BENCH("LMP", {
+        lmp_add_mn(rp1, ap, an, bp, bn);
     });
     BENCH("BSDNT", {
         lmp_limb_t carry = nn_add(rp2, ap, an, bp, bn);
         if (carry) rp1[rn - 1] = carry;
     });
-    BENCH("LMP2", {
-        lmp_addc_mn(rp3, ap, an, bp, bn, 0);
-    });
 
     for (size_t i = 0; i < rn; i++) {
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
-        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "LMP2", rp3[i]);
+        ASSERT_LIMB_EQUAL(i, "GMP", rp0[i], "LMP",   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, "GMP", rp0[i], "BSDNT", rp2[i]);
     }
 }
 
@@ -453,12 +453,12 @@ int main()
     bench_cmp_mm_0002();
     bench_addc_nn_0001();
     bench_add_mn_0001();
-    //bench_sub_mn_0001();
-    //bench_mul_mn_0001();
-    //bench_lshift_0001();
-    //bench_lshift_0002();
-    //bench_rshift_0001();
-    //bench_rshift_0002();
-    //bench_xor_0001();
-    //bench_popcount_0001();
+    bench_sub_mn_0001();
+    bench_mul_mn_0001();
+    bench_lshift_0001();
+    bench_lshift_0002();
+    bench_rshift_0001();
+    bench_rshift_0002();
+    bench_xor_0001();
+    bench_popcount_0001();
 }

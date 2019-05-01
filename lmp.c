@@ -30,45 +30,9 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "lmp.h"
+#include "lmp_include.h"
 #include "lmp_amd64.h"
-
-#define MIN(x,y)                (x > y ? y : x)
-#define MAX(x,y)                (x > y ? x : y)
-
-#ifdef LMP_ASSERT
-    #include <assert.h>
-    #define ASSERT(x)           assert(x)
-#elif defined(__clang__)
-    #define ASSERT(x)           __builtin_assume(x)
-#else
-    #define ASSERT(x)
-#endif
-
-#if __WORDSIZE == 64 || __WORDSIZE == 32
-    #define POPCOUNT(x)         __builtin_popcountl(x)
-    #define CLZ(x)              __builtin_clzl(x)
-    #define ADDC(x,y,ci,co)     __builtin_addcl(x,y,ci,co)
-#endif
-
-// This determines in pure C whether the machine is little endian.
-// With any sufficiently smart compiler (-O2) this gets optimized away.
-//
-// Dump of assembler code for function is_little_endian:
-//   0x0000000000000250 <+0>:     mov    $0x1,%eax
-//   0x0000000000000255 <+5>:     retq
-static inline int is_little_endian() {
-    lmp_limb_t t = 0x01020304050607UL;
-    uint8_t *p   = (uint8_t *) &t;
-    lmp_limb_t q =((lmp_limb_t) p[0] <<  0)
-                | ((lmp_limb_t) p[1] <<  8)
-                | ((lmp_limb_t) p[2] << 16)
-                | ((lmp_limb_t) p[3] << 24)
-                | ((lmp_limb_t) p[4] << 32)
-                | ((lmp_limb_t) p[5] << 40)
-                | ((lmp_limb_t) p[6] << 48)
-                | ((lmp_limb_t) p[7] << 56);
-    return t == q;
-}
+#include "lmp_gen.h"
 
 /******************************************************************************
  * Compare
@@ -80,75 +44,55 @@ int lmp_cmp_mm(
 {
     ASSERT(m > 0);
 
-    while (m--) {
-        if (ap[m] != bp[m]) {
-            return ap[m] > bp[m] ? 1 : -1;
-        }
-    }
-
-    return 0;
+#ifdef LMP_CMP_MM_ASM
+    return lmp_cmp_mm_asm(ap, bp, m);
+#else
+    return lmp_cmp_mm_gen(ap, bp, m);
+#endif
 }
 
 int lmp_cmp_mn(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn)
 {
-    if (an > bn) {
-        return 1;
-    }
-    if (an < bn) {
-        return -1;
-    }
-
-    return lmp_cmp_mm(ap, bp, an);
+#ifdef LMP_CMP_MN_ASM
+    return lmp_cmp_mn_asm(ap, an, bp, bn);
+#else
+    return lmp_cmp_mn_gen(ap, an, bp, bn);
+#endif
 }
 
 /******************************************************************************
- * Addition & Subtraction
+ * Addition
  *****************************************************************************/
 
-#ifndef LMP_ADDC_N
-lmp_limb_t lmp_addc_n(
+lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap, size_t n, lmp_limb_t c)
+    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c)
 {
     ASSERT(c <= 1);
 
-    size_t i = 0;
-    for (; i < n && c; i++) {
-        lmp_limb_t a = rp[i] = ap[i] + 1;
-        if (a) break;
-    }
-    for (++i; i < n; i++) {
-        rp[i] = ap[i];
-        c = 0;
-    }
-
-    return c;
-}
+#ifdef LMP_ADDC_M_ASM
+    return lmp_addc_m_asm(rp, ap, m, c);
+#else
+    return lmp_addc_m_gen(rp, ap, m, c);
 #endif
+}
 
-#ifndef LMP_ADDC_NN
-lmp_limb_t lmp_addc_nn(
+lmp_limb_t lmp_addc_mm(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t n, lmp_limb_t c)
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
 {
     ASSERT(c <= 1);
 
-    for (size_t i = 0; i < n; i++) {
-        lmp_dlimb_t x = c;
-        x += ap[i];
-        x += bp[i];
-        rp[i] = (lmp_limb_t) x;
-        c = (lmp_limb_t) (x >> LMP_LIMB_W);
-    }
-
-    return c;
-}
+#ifdef LMP_ADDC_MM_ASM
+    return lmp_addc_mm_asm(rp, ap, bp, m, c);
+#else
+    return lmp_addc_mm_gen(rp, ap, bp, m, c);
 #endif
+}
 
-#ifndef LMP_ADDC_MN
 lmp_limb_t lmp_addc_mn(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
@@ -159,12 +103,10 @@ lmp_limb_t lmp_addc_mn(
     ASSERT(an >= bn);
     ASSERT(c <= 1);
 
-    c = lmp_addc_nn(rp, ap, bp, bn, c);
-    return lmp_addc_n(&rp[bn], &ap[bn], an - bn, c);
+    lmp_limb_t co = lmp_addc_mm(rp, ap, bp, bn, c);
+    return lmp_addc_m(&rp[bn], &ap[bn], an - bn, co);
 }
-#endif
 
-#ifndef LMP_ADD_MN
 void lmp_add_mn(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
@@ -175,14 +117,11 @@ void lmp_add_mn(
     ASSERT(an >= bn);
 
     lmp_limb_t c = lmp_addc_mn(rp, ap, an, bp, bn, 0);
-        //: lmp_addc_mn(rp, bp, bn, ap, an, 0);
     if (c) {
         rp[MAX(an, bn) - 1] = 1;
     }
 }
-#endif
 
-#ifndef LMP_ADD_MN_SIZE
 size_t lmp_add_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
@@ -218,7 +157,10 @@ size_t lmp_add_mn_size(
     }
     return an + (ap[0] + bp[0] < ap[0]);
 }
-#endif
+
+/******************************************************************************
+ * Subtraction
+ *****************************************************************************/
 
 static inline size_t lmp_sub_xx_size(
     const lmp_limb_t *const restrict ap,

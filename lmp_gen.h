@@ -31,53 +31,66 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "lmp.h"
 
-#if !defined(LMP_DISABLE_ASM) && defined(__amd64__)
+/******************************************************************************
+ * Compare
+ *****************************************************************************/
 
-#define LMP_ADDC_MM_ASM
-static inline lmp_limb_t lmp_addc_mm_asm(
+int lmp_cmp_mm_gen(
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m)
+{
+    while (m--) {
+        if (ap[m] != bp[m]) {
+            return ap[m] > bp[m] ? 1 : -1;
+        }
+    }
+    return 0;
+}
+
+int lmp_cmp_mn_gen(
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn)
+{
+    if (an > bn) {
+        return 1;
+    }
+    if (an < bn) {
+        return -1;
+    }
+    return lmp_cmp_mm(ap, bp, an);
+}
+
+/******************************************************************************
+ * Addition
+ *****************************************************************************/
+
+lmp_limb_t lmp_addc_m_gen(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c)
+{
+    size_t i = 0;
+    for (; i < m && c; i++) {
+        lmp_limb_t a = rp[i] = ap[i] + 1;
+        if (a) break;
+    }
+    for (++i; i < m; i++) {
+        rp[i] = ap[i];
+        c = 0;
+    }
+    return c;
+}
+
+lmp_limb_t lmp_addc_mm_gen(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
 {
-   lmp_limb_t res;
-
-   __asm__ (
-    "   xor %[res], %[res]; \
-        jrcxz 4f; \
-        leaq (%[rp],%[m],8), %[rp]; \
-        leaq (%[ap],%[m],8), %[ap]; \
-        leaq (%[bp],%[m],8), %[bp]; \
-        neg %[m]; \
-        bt $0, %[m]; \
-        jnc 1f; \
-        \
-        add (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        leaq 1(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2f; \
-    1:; \
-        bt $0, %[c]; \
-    2:; \
-        movq (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        movq 8(%[ap],%[m],8), %[c]; \
-        adc 8(%[bp],%[m],8), %[c]; \
-        mov %[c], 8(%[rp],%[m],8); \
-        leaq 2(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2b; \
-    3:; \
-        setb %b[res]; \
-    4:;"
-
-   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m), [c] "+r" (c)
-   :: "cc", "memory"
-   );
-
-   return res;
+    for (size_t i = 0; i < m; i++) {
+        lmp_dlimb_t x = c;
+        x += ap[i];
+        x += bp[i];
+        rp[i] = (lmp_limb_t) x;
+        c = (lmp_limb_t) (x >> LMP_LIMB_W);
+    }
+    return c;
 }
-
-#endif

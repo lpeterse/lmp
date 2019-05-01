@@ -29,55 +29,45 @@ POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-#include "lmp.h"
+#ifndef LMP_INCLUDE_H
+#define LMP_INCLUDE_H
 
-#if !defined(LMP_DISABLE_ASM) && defined(__amd64__)
+#define MIN(x,y)                (x > y ? y : x)
+#define MAX(x,y)                (x > y ? x : y)
 
-#define LMP_ADDC_MM_ASM
-static inline lmp_limb_t lmp_addc_mm_asm(
-          lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
-{
-   lmp_limb_t res;
+#ifdef LMP_ASSERT
+    #include <assert.h>
+    #define ASSERT(x)           assert(x)
+#elif defined(__clang__)
+    #define ASSERT(x)           __builtin_assume(x)
+#else
+    #define ASSERT(x)
+#endif
 
-   __asm__ (
-    "   xor %[res], %[res]; \
-        jrcxz 4f; \
-        leaq (%[rp],%[m],8), %[rp]; \
-        leaq (%[ap],%[m],8), %[ap]; \
-        leaq (%[bp],%[m],8), %[bp]; \
-        neg %[m]; \
-        bt $0, %[m]; \
-        jnc 1f; \
-        \
-        add (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        leaq 1(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2f; \
-    1:; \
-        bt $0, %[c]; \
-    2:; \
-        movq (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        movq 8(%[ap],%[m],8), %[c]; \
-        adc 8(%[bp],%[m],8), %[c]; \
-        mov %[c], 8(%[rp],%[m],8); \
-        leaq 2(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2b; \
-    3:; \
-        setb %b[res]; \
-    4:;"
+#if __WORDSIZE == 64 || __WORDSIZE == 32
+    #define POPCOUNT(x)         __builtin_popcountl(x)
+    #define CLZ(x)              __builtin_clzl(x)
+    #define ADDC(x,y,ci,co)     __builtin_addcl(x,y,ci,co)
+#endif
 
-   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m), [c] "+r" (c)
-   :: "cc", "memory"
-   );
-
-   return res;
+// This determines in pure C whether the machine is little endian.
+// With any sufficiently smart compiler (-O2) this gets optimized away.
+//
+// Dump of assembler code for function is_little_endian:
+//   0x0000000000000250 <+0>:     mov    $0x1,%eax
+//   0x0000000000000255 <+5>:     retq
+static inline int is_little_endian() {
+    lmp_limb_t t = 0x01020304050607UL;
+    uint8_t *p   = (uint8_t *) &t;
+    lmp_limb_t q =((lmp_limb_t) p[0] <<  0)
+                | ((lmp_limb_t) p[1] <<  8)
+                | ((lmp_limb_t) p[2] << 16)
+                | ((lmp_limb_t) p[3] << 24)
+                | ((lmp_limb_t) p[4] << 32)
+                | ((lmp_limb_t) p[5] << 40)
+                | ((lmp_limb_t) p[6] << 48)
+                | ((lmp_limb_t) p[7] << 56);
+    return t == q;
 }
 
 #endif
