@@ -80,7 +80,7 @@ int lmp_cmp_mn(
  * Addition
  *****************************************************************************/
 
-lmp_limb_t lmp_addc_n0(
+lmp_limb_t lmp_addc_n(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t n, lmp_limb_t c);
 

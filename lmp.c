@@ -85,12 +85,13 @@ int lmp_cmp_mm(
             return ap[m] > bp[m] ? 1 : -1;
         }
     }
+
     return 0;
 }
 
 int lmp_cmp_mn(
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t *const restrict bp, const size_t bn)
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn)
 {
     if (an > bn) {
         return 1;
@@ -98,6 +99,7 @@ int lmp_cmp_mn(
     if (an < bn) {
         return -1;
     }
+
     return lmp_cmp_mm(ap, bp, an);
 }
 
@@ -141,7 +143,7 @@ size_t lmp_add_mn_size(
     return an + (ap[0] + bp[0] < ap[0]);
 }
 
-lmp_limb_t lmp_addc_n0(
+lmp_limb_t lmp_addc_n(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t n, lmp_limb_t c)
 {
@@ -189,7 +191,7 @@ lmp_limb_t lmp_addc_mn(
     ASSERT(c <= 1);
 
     c = lmp_addc_nn(rp, ap, bp, bn, c);
-    return lmp_addc_n0(&rp[bn], &ap[bn], an - bn, c);
+    return lmp_addc_n(&rp[bn], &ap[bn], an - bn, c);
 }
 
 void lmp_add_mn(

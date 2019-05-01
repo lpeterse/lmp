@@ -47,6 +47,14 @@ POSSIBILITY OF SUCH DAMAGE.
         }\
     }
 
+#define ASSERT_INT_EQUAL(value, expected) {\
+        if ((expected) != (value)) {\
+            printf ("%s failed: %s:\n  expected: %d\n  actual:   %d\n", \
+                __FUNCTION__, #value, expected, value); \
+            exit(1); \
+        }\
+    }
+
 #define ASSERT_LIMB_EQUAL(value, expected) {\
         if ((expected) != (value)) {\
             printf ("%s failed: %s:\n  expected: 0x%016lx\n  actual:   0x%016lx\n", \
@@ -54,6 +62,94 @@ POSSIBILITY OF SUCH DAMAGE.
             exit(1); \
         }\
     }
+
+/*****************************************************************************
+ * Compare
+ *****************************************************************************/
+
+static void lmp_test_cmp_mm_0001(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, 0);
+}
+
+static void lmp_test_cmp_mm_0002(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(2) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, -1);
+}
+
+static void lmp_test_cmp_mm_0003(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, 1);
+}
+
+static void lmp_test_cmp_mm_0004(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, 0);
+}
+
+static void lmp_test_cmp_mm_0005(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(2) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, -1);
+}
+
+static void lmp_test_cmp_mm_0006(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(2) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    size_t m = SZ(ap);
+    int r = lmp_cmp_mm(ap, bp, m);
+    ASSERT_INT_EQUAL(r, 1);
+}
+
+static void lmp_test_cmp_mn_0001(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    size_t an = SZ(ap);
+    size_t bn = SZ(bp);
+    int r = lmp_cmp_mn(ap, an, bp, bn);
+    ASSERT_INT_EQUAL(r, 0);
+}
+
+static void lmp_test_cmp_mn_0002(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1) };
+    size_t an = SZ(ap);
+    size_t bn = SZ(bp);
+    int r = lmp_cmp_mn(ap, an, bp, bn);
+    ASSERT_INT_EQUAL(r, 1);
+}
+
+static void lmp_test_cmp_mn_0003(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_C(1) };
+    lmp_limb_t bp[] = { LMP_LIMB_C(1), LMP_LIMB_C(1) };
+    size_t an = SZ(ap);
+    size_t bn = SZ(bp);
+    int r = lmp_cmp_mn(ap, an, bp, bn);
+    ASSERT_INT_EQUAL(r, -1);
+}
 
 /*****************************************************************************
  * Addition & subtraction
@@ -853,6 +949,17 @@ static void lmp_test_popcount_0002(void)
  *****************************************************************************/
 
 int main(void) {
+    lmp_test_cmp_mm_0001();
+    lmp_test_cmp_mm_0002();
+    lmp_test_cmp_mm_0003();
+    lmp_test_cmp_mm_0004();
+    lmp_test_cmp_mm_0005();
+    lmp_test_cmp_mm_0006();
+
+    lmp_test_cmp_mn_0001();
+    lmp_test_cmp_mn_0002();
+    lmp_test_cmp_mn_0003();
+
     lmp_test_sub_mn_size_0001();
     lmp_test_sub_mn_size_0002();
     lmp_test_sub_mn_size_0003();
