@@ -41,18 +41,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #define ITERATIONS 1000
 #define BENCH(impl, run) {\
     for (size_t i = 0; i < ITERATIONS; i++) run; \
-        struct timespec td, t1, t2; \
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1); \
-        for (size_t i = 0; i < ITERATIONS; i++) { run; }; \
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t2); \
-        if ((t2.tv_nsec - t1.tv_nsec) < 0) { \
-            td.tv_sec = t2.tv_sec - t1.tv_sec - 1; \
-            td.tv_nsec = t2.tv_nsec - t1.tv_nsec + 1000000000; \
-        } else { \
-            td.tv_sec = t2.tv_sec - t1.tv_sec; \
-            td.tv_nsec = t2.tv_nsec - t1.tv_nsec; \
-        } \
-        printf("  %-20s %lld.%.9lds\n", impl, (long long) td.tv_sec, td.tv_nsec); \
+        unsigned long long x,y,d = -1;\
+        for (size_t i = 0; i < ITERATIONS; i++) { \
+            x = __builtin_readcyclecounter(); \
+            run; \
+            y = __builtin_readcyclecounter(); \
+            if (y - x < d) d = y - x; \
+        }; \
+        printf("  %-20s %lld\n", impl, d); \
     }
 #define ASSERT_LIMB_EQUAL(i, n1, v1, n2, v2) {\
         if ((v1) != (v2)) {\
@@ -67,6 +63,63 @@ POSSIBILITY OF SUCH DAMAGE.
             exit(1); \
         }\
     }
+
+static void bench_cmp_mm_0001(void)
+{
+    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    size_t n = 3000;
+    
+    lmp_limb_t ap[n];
+    lmp_limb_t bp[n];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, n);
+    nn_random(bp, rnd, n);
+    size_t r1, r2, r3;
+
+    BENCH("LMP", {
+        r1 = lmp_cmp_mm(ap, bp, n);
+    });
+    BENCH("GMP", {
+        r2 = mpn_cmp(ap, bp, n);
+    });
+    BENCH("BSDNT", {
+        r3 = nn_cmp_m(ap, bp, n);
+    });
+
+    for (size_t i = 0; i < n; i++) {
+        ASSERT_SIZE_EQUAL(r1, r2);
+        ASSERT_SIZE_EQUAL(r1, r3);
+    }
+}
+
+static void bench_cmp_mm_0002(void)
+{
+    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    size_t n = 3000;
+    
+    lmp_limb_t ap[n];
+    lmp_limb_t bp[n];
+    for (size_t i = 0; i < n; i++) {
+        ap[i] = bp[i] = 123;
+    }
+    size_t r1, r2, r3;
+
+    BENCH("LMP", {
+        r1 = lmp_cmp_mm(ap, bp, n);
+    });
+    BENCH("GMP", {
+        r2 = mpn_cmp(ap, bp, n);
+    });
+    BENCH("BSDNT", {
+        r3 = nn_cmp_m(ap, bp, n);
+    });
+
+    for (size_t i = 0; i < n; i++) {
+        ASSERT_SIZE_EQUAL(r1, r2);
+        ASSERT_SIZE_EQUAL(r1, r3);
+    }
+}
 
 static void bench_addc_nn_0001(void)
 {
@@ -396,8 +449,10 @@ static void bench_popcount_0001(void)
 
 int main()
 {
-    bench_addc_nn_0001();
-    bench_add_mn_0001();
+    bench_cmp_mm_0001();
+    bench_cmp_mm_0002();
+    //bench_addc_nn_0001();
+    //bench_add_mn_0001();
     //bench_sub_mn_0001();
     //bench_mul_mn_0001();
     //bench_lshift_0001();

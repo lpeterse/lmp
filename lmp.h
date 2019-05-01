@@ -68,6 +68,10 @@ POSSIBILITY OF SUCH DAMAGE.
  * Compare
  *****************************************************************************/
 
+int lmp_cmp_mm(
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m);
+
 int lmp_cmp_mn(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);

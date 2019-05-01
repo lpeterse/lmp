@@ -30,8 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "lmp.h"
-
-#include "stdio.h"
+#include "lmp_amd64.h"
 
 #define MIN(x,y)                (x > y ? y : x)
 #define MAX(x,y)                (x > y ? x : y)
@@ -75,6 +74,20 @@ static inline int is_little_endian() {
  * Compare
  *****************************************************************************/
 
+int lmp_cmp_mm(
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m)
+{
+    ASSERT(m > 0);
+
+    while (m--) {
+        if (ap[m] != bp[m]) {
+            return ap[m] > bp[m] ? 1 : -1;
+        }
+    }
+    return 0;
+}
+
 int lmp_cmp_mn(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
@@ -85,17 +98,7 @@ int lmp_cmp_mn(
     if (an < bn) {
         return -1;
     }
-    for (size_t i = an - 1; i >= 0; i--) {
-        const lmp_limb_t a = ap[i];
-        const lmp_limb_t b = bp[i];
-        if (a > b) {
-            return 1;
-        }
-        if (a < b) {
-            return -1;
-        }
-    }
-    return 0;
+    return lmp_cmp_mm(ap, bp, an);
 }
 
 /******************************************************************************
@@ -138,7 +141,7 @@ size_t lmp_add_mn_size(
     return an + (ap[0] + bp[0] < ap[0]);
 }
 
-inline lmp_limb_t lmp_addc_n0(
+lmp_limb_t lmp_addc_n0(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t n, lmp_limb_t c)
 {
@@ -157,7 +160,7 @@ inline lmp_limb_t lmp_addc_n0(
     return c;
 }
 
-inline lmp_limb_t lmp_addc_nn(
+lmp_limb_t lmp_addc_nn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp, size_t n, lmp_limb_t c)
