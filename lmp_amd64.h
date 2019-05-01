@@ -32,7 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "lmp.h"
 
 #ifdef __amd64__
-
 #define LMP_ADDC_NN
 lmp_limb_t lmp_addc_nn(
           lmp_limb_t *restrict rp,
@@ -42,27 +41,39 @@ lmp_limb_t lmp_addc_nn(
    lmp_limb_t res;
 
    __asm__ (
-    "   mov %[c], %[res]; \
+    "   xor %[res], %[res]; \
+        jrcxz 4f; \
+        leaq  (%[rp],%[m],8), %[rp]; \
+        leaq  (%[ap],%[m],8), %[ap]; \
+        leaq  (%[bp],%[m],8), %[bp]; \
+        neg   %[m]; \
+        bt    $0, %[m]; \
+        jnc   1f; \
+        \
+        add   (%[ap],%[m],8), %[c]; \
+        adc   (%[bp],%[m],8), %[c]; \
+        mov   %[c], (%[rp],%[m],8); \
+        leaq  1(%[m]), %[m]; \
         jrcxz 3f; \
-        leaq (%[rp],%[m],8), %[rp]; \
-        leaq (%[ap],%[m],8), %[ap]; \
-        leaq (%[bp],%[m],8), %[bp]; \
-        neg %[m]; \
-        bt  $0, %[res]; \
+        jmp 2f; \
     1:; \
-        movq (%[ap],%[m],8), %[res]; \
-        adc (%[bp],%[m],8), %[res]; \
-        mov %[res], (%[rp],%[m],8); \
-        leaq 1(%[m]), %[m]; \
-        jrcxz 2f; \
-        jmp 1b; \
+        bt $0, %[c]; \
     2:; \
+        movq (%[ap],%[m],8), %[c]; \
+        adc (%[bp],%[m],8), %[c]; \
+        mov %[c], (%[rp],%[m],8); \
+        movq 8(%[ap],%[m],8), %[c]; \
+        adc 8(%[bp],%[m],8), %[c]; \
+        mov %[c], 8(%[rp],%[m],8); \
+        leaq 2(%[m]), %[m]; \
+        jrcxz 3f; \
+        jmp 2b; \
+    3:; \
         setb %b[res]; \
-    3:;"
+    4:;"
 
-   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m)
-   : [c] "r" (c)
-   : "cc", "memory"
+   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m), [c] "+r" (c)
+   :: "cc", "memory"
    );
 
    return res;
