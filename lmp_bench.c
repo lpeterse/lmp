@@ -110,7 +110,7 @@ static void bench_add_mn_0001(void)
     nn_random(ap, rnd, an);
     nn_random(bp, rnd, bn);
     size_t rn = lmp_add_mn_size(ap, an, bp, bn);
-    lmp_limb_t rp0[rn], rp1[rn], rp2[rn];
+    lmp_limb_t rp0[rn], rp1[rn], rp2[rn], rp3[rn];
 
     BENCH("LMP", {
         lmp_add_mn(rp0, ap, an, bp, bn);
@@ -123,10 +123,14 @@ static void bench_add_mn_0001(void)
         lmp_limb_t carry = nn_add(rp2, ap, an, bp, bn);
         if (carry) rp1[rn - 1] = carry;
     });
+    BENCH("LMP2", {
+        lmp_addc_mn(rp3, ap, an, bp, bn, 0);
+    });
 
     for (size_t i = 0; i < rn; i++) {
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "GMP",   rp1[i]);
         ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "BSDNT", rp2[i]);
+        ASSERT_LIMB_EQUAL(i, "LMP", rp0[i], "LMP2", rp3[i]);
     }
 }
 
@@ -394,12 +398,12 @@ int main()
 {
     bench_addc_nn_0001();
     bench_add_mn_0001();
-    bench_sub_mn_0001();
-    bench_mul_mn_0001();
-    bench_lshift_0001();
-    bench_lshift_0002();
-    bench_rshift_0001();
-    bench_rshift_0002();
-    bench_xor_0001();
-    bench_popcount_0001();
+    //bench_sub_mn_0001();
+    //bench_mul_mn_0001();
+    //bench_lshift_0001();
+    //bench_lshift_0002();
+    //bench_rshift_0001();
+    //bench_rshift_0002();
+    //bench_xor_0001();
+    //bench_popcount_0001();
 }

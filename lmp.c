@@ -33,8 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "stdio.h"
 
-#define likely(x)               __builtin_expect(!!(x), 1)
-#define unlikely(x)             __builtin_expect(!!(x), 0)
 #define MIN(x,y)                (x > y ? y : x)
 #define MAX(x,y)                (x > y ? x : y)
 
@@ -71,21 +69,6 @@ static inline int is_little_endian() {
                 | ((lmp_limb_t) p[6] << 48)
                 | ((lmp_limb_t) p[7] << 56);
     return t == q;
-}
-
-static inline lmp_limb_t addc(lmp_limb_t x, lmp_limb_t y, lmp_limb_t ci, lmp_limb_t *co) {
-    ASSERT(ci <= 1);
-    lmp_limb_t d = x + y;
-    lmp_limb_t e = d + ci;
-    *co = e < x | d < x;
-    return e + ci;
-}
-
-static inline lmp_limb_t subc(lmp_limb_t x, lmp_limb_t y, lmp_limb_t *c) {
-    ASSERT(*c <= 1);
-    lmp_limb_t d = x - y - *c;
-    *c = d > x;
-    return d;
 }
 
 /******************************************************************************
@@ -155,12 +138,30 @@ size_t lmp_add_mn_size(
     return an + (ap[0] + bp[0] < ap[0]);
 }
 
-lmp_limb_t lmp_addc_nn(
+inline lmp_limb_t lmp_addc_n0(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t n, lmp_limb_t c)
+{
+    ASSERT(c <= 1);
+
+    size_t i = 0;
+    for (; i < n && c; i++) {
+        lmp_limb_t a = rp[i] = ap[i] + 1;
+        if (a) break;
+    }
+    for (++i; i < n; i++) {
+        rp[i] = ap[i];
+        c = 0;
+    }
+
+    return c;
+}
+
+inline lmp_limb_t lmp_addc_nn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap,
-    const lmp_limb_t *const restrict bp, const size_t n, lmp_limb_t c)
+    const lmp_limb_t *const restrict bp, size_t n, lmp_limb_t c)
 {
-    ASSERT(n > 0);
     ASSERT(c <= 1);
 
     for (size_t i = 0; i < n; i++) {
@@ -170,40 +171,37 @@ lmp_limb_t lmp_addc_nn(
         rp[i] = (lmp_limb_t) x;
         c = (lmp_limb_t) (x >> LMP_LIMB_W);
     }
+
     return c;
 }
 
-void lmp_add_mn(
-          lmp_limb_t *const restrict rp,
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t *const restrict bp, const size_t bn)
+lmp_limb_t lmp_addc_mn(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn, lmp_limb_t c)
 {
     ASSERT(an > 0);
     ASSERT(bn > 0);
+    ASSERT(an >= bn);
+    ASSERT(c <= 1);
 
-    if (bn > an) {
-        lmp_add_mn(rp, bp, bn, ap, an);
-        return;
-    }
+    c = lmp_addc_nn(rp, ap, bp, bn, c);
+    return lmp_addc_n0(&rp[bn], &ap[bn], an - bn, c);
+}
 
-    size_t i = 0;
-    lmp_limb_t c = 0;
-    for (; i < bn; i++) {
-        lmp_dlimb_t x = (lmp_dlimb_t) ap[i] + (lmp_dlimb_t) bp[i] + c;
-        rp[i] = (lmp_limb_t) x;
-        c = (lmp_limb_t) (x >> LMP_LIMB_W);
-    }
-    for (; i < an && c; i++) {
-        lmp_dlimb_t x = (lmp_dlimb_t) ap[i] + c;
-        rp[i] = (lmp_limb_t) x;
-        c = (lmp_limb_t) (x >> LMP_LIMB_W);
-    }
+void lmp_add_mn(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn)
+{
+    ASSERT(an > 0);
+    ASSERT(bn > 0);
+    ASSERT(an >= bn);
+
+    lmp_limb_t c = lmp_addc_mn(rp, ap, an, bp, bn, 0);
+        //: lmp_addc_mn(rp, bp, bn, ap, an, 0);
     if (c) {
-        rp[an] = 1;
-    } else {
-        for (; i < an; i++) {
-            rp[i] = ap[i];
-        }
+        rp[MAX(an, bn) - 1] = 1;
     }
 }
 
