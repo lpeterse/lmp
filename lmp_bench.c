@@ -427,6 +427,32 @@ static void bench_xor_0001(void)
 
 static void bench_popcount_0001(void)
 {
+    printf("\n%s: r = popcount(a) where an = 3\n", __FUNCTION__);
+    size_t n = 3;
+
+    lmp_limb_t ap[n];
+    size_t p1,p2,p3;
+
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, n);
+
+    BENCH(GMP, {
+        p1 = mpn_popcount(ap, n);
+    });
+    BENCH(LMP, {
+        p2 = lmp_popcount(ap, n);
+    });
+    BENCH(BSDNT, {
+        p3 = nn_popcount(ap, n);
+    });
+
+    ASSERT_SIZE_EQUAL(p1, p2);
+    ASSERT_SIZE_EQUAL(p1, p3);
+}
+
+static void bench_popcount_0002(void)
+{
     printf("\n%s: r = popcount(a) where an = 300\n", __FUNCTION__);
     size_t n = 300;
 
@@ -468,4 +494,5 @@ int main()
     bench_rshift_0002();
     bench_xor_0001();
     bench_popcount_0001();
+    bench_popcount_0002();
 }

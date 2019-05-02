@@ -38,19 +38,33 @@ POSSIBILITY OF SUCH DAMAGE.
  * CPU feature detection
  *****************************************************************************/
 
-static inline int lmp_cpu_has_popcnt()
+long lmp_cpu_has_popcnt()
 {
-    int x;
-    __asm__ (
-        "mov $1, %%eax;"
-        "cpuid;"
-        "xor %%eax, %%eax;"
-        "bt $23, %%ecx;"
-        "adc $0, %0;"
-        : "=a" (x)
-        :: "cc", "ebx", "ecx", "edx"
-    );
-    return x;
+    static long result;
+
+    if (!result) {
+        __asm__ (
+            // Save clobbered registers on stack in order to not having to
+            // declare them which turned out to confuse the register allocator.
+            "pushq %%rbx;"
+            "pushq %%rcx;"
+            "pushq %%rdx;"
+            // Call CPUID function 1.
+            "mov $1, %%eax;"
+            "cpuid;"
+            "xor %%rax, %%rax;"
+            "bt $23, %%ecx;"
+            "adc $1, %0;"
+            // Restore registers.
+            "popq %%rdx;"
+            "popq %%rcx;"
+            "popq %%rbx;"
+            : "=a" (result)
+            :: "cc"
+        );
+    }
+
+    return result - 1;
 }
 
 /*****************************************************************************
