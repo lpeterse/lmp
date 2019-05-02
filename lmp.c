@@ -32,66 +32,78 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "lmp.h"
 #include "lmp_include.h"
 #include "lmp_amd64.h"
-#include "lmp_gen.h"
 
 /******************************************************************************
  * Compare
  *****************************************************************************/
 
+#ifndef LMP_CMP_MM
 int lmp_cmp_mm(
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m)
 {
-    ASSERT(m > 0);
-
-#ifdef LMP_CMP_MM_ASM
-    return lmp_cmp_mm_asm(ap, bp, m);
-#else
-    return lmp_cmp_mm_gen(ap, bp, m);
-#endif
+    while (m--) {
+        if (ap[m] != bp[m]) {
+            return ap[m] > bp[m] ? 1 : -1;
+        }
+    }
+    return 0;
 }
+#endif
 
+#ifndef LMP_CMP_MN
 int lmp_cmp_mn(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn)
 {
-#ifdef LMP_CMP_MN_ASM
-    return lmp_cmp_mn_asm(ap, an, bp, bn);
-#else
-    return lmp_cmp_mn_gen(ap, an, bp, bn);
-#endif
+    if (an > bn) {
+        return 1;
+    }
+    if (an < bn) {
+        return -1;
+    }
+    return lmp_cmp_mm(ap, bp, an);
 }
+#endif
 
 /******************************************************************************
  * Addition
  *****************************************************************************/
 
+#ifndef LMP_ADDC_M
 lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c)
 {
-    ASSERT(c <= 1);
-
-#ifdef LMP_ADDC_M_ASM
-    return lmp_addc_m_asm(rp, ap, m, c);
-#else
-    return lmp_addc_m_gen(rp, ap, m, c);
-#endif
+    size_t i = 0;
+    for (; i < m && c; i++) {
+        lmp_limb_t a = rp[i] = ap[i] + 1;
+        if (a) break;
+    }
+    for (++i; i < m; i++) {
+        rp[i] = ap[i];
+        c = 0;
+    }
+    return c;
 }
+#endif
 
+#ifndef LMP_ADDC_MM
 lmp_limb_t lmp_addc_mm(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
 {
-    ASSERT(c <= 1);
-
-#ifdef LMP_ADDC_MM_ASM
-    return lmp_addc_mm_asm(rp, ap, bp, m, c);
-#else
-    return lmp_addc_mm_gen(rp, ap, bp, m, c);
-#endif
+    for (size_t i = 0; i < m; i++) {
+        lmp_dlimb_t x = c;
+        x += ap[i];
+        x += bp[i];
+        rp[i] = (lmp_limb_t) x;
+        c = (lmp_limb_t) (x >> LMP_LIMB_W);
+    }
+    return c;
 }
+#endif
 
 lmp_limb_t lmp_addc_mn(
           lmp_limb_t *restrict rp,
@@ -542,12 +554,16 @@ void lmp_clearbit(
     if (ai < rn) rp[ai] = rp[ai] & ~(1 << wi);
 }
 
+#ifndef LMP_POPCOUNT
 size_t lmp_popcount(
     const lmp_limb_t *restrict ap, size_t an)
 {
-    size_t count = 0;
+    size_t r = 0;
+
     for (; an > 0; an--) {
-        count += POPCOUNT(ap[an - 1]);
+        r += POPCOUNT(ap[an - 1]);
     }
-    return count;
+
+    return r;
 }
+#endif

@@ -72,15 +72,7 @@ int lmp_cmp_mm(
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m);
 
-int lmp_cmp_mm_gen(
-    const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t m);
-
 int lmp_cmp_mn(
-    const lmp_limb_t *restrict ap, size_t an,
-    const lmp_limb_t *restrict bp, size_t bn);
-
-int lmp_cmp_mn_gen(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn);
 
@@ -92,16 +84,7 @@ lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c);
 
-lmp_limb_t lmp_addc_m_gen(
-          lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c);
-
 lmp_limb_t lmp_addc_mm(
-          lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c);
-
-lmp_limb_t lmp_addc_mm_gen(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c);

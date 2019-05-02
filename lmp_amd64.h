@@ -30,11 +30,35 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "lmp.h"
+#include "lmp_include.h"
 
-#if !defined(LMP_DISABLE_ASM) && defined(__amd64__)
+#if !defined(LMP_NOASM) && defined(__amd64__)
 
-#define LMP_ADDC_MM_ASM
-static inline lmp_limb_t lmp_addc_mm_asm(
+/*****************************************************************************
+ * CPU feature detection
+ *****************************************************************************/
+
+static inline int lmp_cpu_has_popcnt()
+{
+    int x;
+    __asm__ (
+        "mov $1, %%eax;"
+        "cpuid;"
+        "xor %%eax, %%eax;"
+        "bt $23, %%ecx;"
+        "adc $0, %0;"
+        : "=a" (x)
+        :: "cc", "ebx", "ecx", "edx"
+    );
+    return x;
+}
+
+/*****************************************************************************
+ * Addition
+ *****************************************************************************/
+
+#define LMP_ADDC_MM
+lmp_limb_t lmp_addc_mm(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
@@ -42,42 +66,79 @@ static inline lmp_limb_t lmp_addc_mm_asm(
    lmp_limb_t res;
 
    __asm__ (
-    "   xor %[res], %[res]; \
-        jrcxz 4f; \
-        leaq (%[rp],%[m],8), %[rp]; \
-        leaq (%[ap],%[m],8), %[ap]; \
-        leaq (%[bp],%[m],8), %[bp]; \
-        neg %[m]; \
-        bt $0, %[m]; \
-        jnc 1f; \
-        \
-        add (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        leaq 1(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2f; \
-    1:; \
-        bt $0, %[c]; \
-    2:; \
-        movq (%[ap],%[m],8), %[c]; \
-        adc (%[bp],%[m],8), %[c]; \
-        mov %[c], (%[rp],%[m],8); \
-        movq 8(%[ap],%[m],8), %[c]; \
-        adc 8(%[bp],%[m],8), %[c]; \
-        mov %[c], 8(%[rp],%[m],8); \
-        leaq 2(%[m]), %[m]; \
-        jrcxz 3f; \
-        jmp 2b; \
-    3:; \
-        setb %b[res]; \
-    4:;"
+        "xor %[res], %[res];"
+        "jrcxz 4f;"
+        "leaq (%[rp],%[m],8), %[rp];"
+        "leaq (%[ap],%[m],8), %[ap];"
+        "leaq (%[bp],%[m],8), %[bp];"
+        "neg %[m];"
+        "bt $0, %[m];"
+        "jnc 1f;"
 
-   : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp), [m] "+c" (m), [c] "+r" (c)
-   :: "cc", "memory"
+        "add (%[ap],%[m],8), %[c];"
+        "adc (%[bp],%[m],8), %[c];"
+        "mov %[c], (%[rp],%[m],8);"
+        "leaq 1(%[m]), %[m];"
+        "jrcxz 3f;"
+        "jmp 2f;"
+    "1:;"
+        "bt $0, %[c];"
+    "2:;"
+        "movq (%[ap],%[m],8), %[c];"
+        "adc (%[bp],%[m],8), %[c];"
+        "mov %[c], (%[rp],%[m],8);"
+        "movq 8(%[ap],%[m],8), %[c];"
+        "adc 8(%[bp],%[m],8), %[c];"
+        "mov %[c], 8(%[rp],%[m],8);"
+        "leaq 2(%[m]), %[m];"
+        "jrcxz 3f;"
+        "jmp 2b;"
+    "3:;"
+        "setb %b[res];"
+    "4:;"
+        : [res] "=r" (res), [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp),
+          [m] "+c" (m), [c] "+r" (c)
+        :: "cc", "memory"
    );
 
    return res;
+}
+
+/*****************************************************************************
+ * Bitwise operations 
+ *****************************************************************************/
+
+static inline size_t lmp_popcount_1(lmp_limb_t a)
+{
+    size_t r;
+
+    __asm__ (
+        "popcnt %[r], %[a];"
+        : [r] "=r" (r)
+        : [a] "r" (a)
+        : "cc"
+    );
+
+    return r;
+}
+
+#define LMP_POPCOUNT
+size_t lmp_popcount(
+    const lmp_limb_t *restrict ap, size_t an)
+{
+    size_t r = 0;
+
+    if (lmp_cpu_has_popcnt()) {
+        for (; an > 0; an--) {
+            r += lmp_popcount_1(ap[an - 1]);
+        }
+    } else {
+        for (; an > 0; an--) {
+            r += POPCOUNT(ap[an - 1]);
+        }
+    }
+
+    return r;
 }
 
 #endif
