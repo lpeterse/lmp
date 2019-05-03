@@ -129,7 +129,7 @@ static void bench_cmp_mm_0002(void)
     }
 }
 
-static void bench_addc_nn_0001(void)
+static void bench_addc_mmc_0001(void)
 {
     printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
     size_t n = 3000;
@@ -146,7 +146,7 @@ static void bench_addc_nn_0001(void)
         mpn_add(rp0, ap, n, bp, n);
     });
     BENCH(LMP, {
-        lmp_addc_mm(rp1, ap, bp, n, 0);
+        lmp_addc_mmc(rp1, ap, bp, n, 0);
     });
     BENCH(BSDNT, {
         nn_add_mc(rp2, ap, bp, n, 0);
@@ -189,6 +189,69 @@ static void bench_add_mn_0001(void)
         ASSERT_LIMB_EQUAL(i, GMP, rp0[i], LMP,   rp1[i]);
         ASSERT_LIMB_EQUAL(i, GMP, rp0[i], BSDNT, rp2[i]);
     }
+}
+
+static void bench_sub_mb_0001(void)
+{
+    printf("\n%s: r = a - 1 where m = 3000\n", __FUNCTION__);
+    size_t m = 3000;
+    
+    lmp_limb_t ap[m];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, m);
+    lmp_limb_t rp0[m], rp1[m], rp2[m];
+    lmp_limb_t b = 1, b0, b1, b2;
+
+    BENCH(GMP, {
+        b0 = mpn_sub_1(rp0, ap, m, b);
+    });
+    BENCH(LMP, {
+        b1 = lmp_sub_mb(rp1, ap, m, b);
+    });
+    BENCH(BSDNT, {
+        b2 = nn_sub1(rp2, ap, m, b);
+    });
+
+    ASSERT_SIZE_EQUAL(b0, b1);
+    ASSERT_SIZE_EQUAL(b0, b2);
+
+    for (size_t i = 0; i < m; i++) {
+        ASSERT_LIMB_EQUAL(i, GMP, rp0[i], LMP,   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, GMP, rp0[i], BSDNT, rp2[i]);
+    }
+}
+
+static void bench_sub_mmb_0001(void)
+{
+    printf("\n%s: r = a - b where m = 3000\n", __FUNCTION__);
+    size_t m = 3000;
+    
+    lmp_limb_t ap[m], bp[m];
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, m);
+    nn_random(bp, rnd, m);
+    lmp_limb_t rp0[m], rp1[m], rp2[m];
+    lmp_limb_t b0, b1, b2;
+
+    BENCH(GMP, {
+        b0 = mpn_sub_n(rp0, ap, bp, m);
+    });
+    BENCH(LMP, {
+        b1 = lmp_sub_mmb(rp1, ap, bp, m, 0);
+    });
+    BENCH(BSDNT, {
+        b2 = nn_sub_mc(rp2, ap, bp, m, 0);
+    });
+
+    for (size_t i = 0; i < m; i++) {
+        ASSERT_LIMB_EQUAL(i, GMP, rp0[i], LMP,   rp1[i]);
+        ASSERT_LIMB_EQUAL(i, GMP, rp0[i], BSDNT, rp2[i]);
+    }
+
+    ASSERT_SIZE_EQUAL(b0, b1);
+    ASSERT_SIZE_EQUAL(b0, b2);
 }
 
 static void bench_sub_mn_0001(void)
@@ -482,17 +545,20 @@ int main()
     printf("Benchmarking %s...\n", LMP);
     printf("_________________________________________________\n");
 
-    bench_cmp_mm_0001();
-    bench_cmp_mm_0002();
-    bench_addc_nn_0001();
-    bench_add_mn_0001();
-    bench_sub_mn_0001();
-    bench_mul_mn_0001();
-    bench_lshift_0001();
-    bench_lshift_0002();
-    bench_rshift_0001();
-    bench_rshift_0002();
-    bench_xor_0001();
+    //bench_cmp_mm_0001();
+    //bench_cmp_mm_0002();
+    bench_addc_mmc_0001();
+    //bench_add_mn_0001();
+
+    bench_sub_mb_0001();
+    bench_sub_mmb_0001();
+    //bench_sub_mn_0001();
+    //bench_mul_mn_0001();
+    //bench_lshift_0001();
+    //bench_lshift_0002();
+    //bench_rshift_0001();
+    //bench_rshift_0002();
+    //bench_xor_0001();
     bench_popcount_0001();
     bench_popcount_0002();
 }

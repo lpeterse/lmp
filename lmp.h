@@ -73,8 +73,8 @@ int lmp_cmp_mm(
     const lmp_limb_t *restrict bp, size_t m);
 
 int lmp_cmp_mn(
-    const lmp_limb_t *restrict ap, size_t an,
-    const lmp_limb_t *restrict bp, size_t bn);
+    const lmp_limb_t *restrict ap, size_t m,
+    const lmp_limb_t *restrict bp, size_t n);
 
 /*****************************************************************************
  * Addition
@@ -84,33 +84,46 @@ lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c);
 
-lmp_limb_t lmp_addc_mm(
+lmp_limb_t lmp_addc_mmc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c);
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t carry);
 
 lmp_limb_t lmp_addc_mn(
           lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap, size_t an,
-    const lmp_limb_t *restrict bp, size_t bn, lmp_limb_t c);
+    const lmp_limb_t *restrict ap, size_t m,
+    const lmp_limb_t *restrict bp, size_t n, lmp_limb_t c);
 
 size_t lmp_add_mn_size(
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t *const restrict bp, const size_t bn);
+    const lmp_limb_t *restrict ap, size_t m,
+    const lmp_limb_t *restrict bp, size_t n);
 
 void lmp_add_mn(
           lmp_limb_t *restrict rp,
-    const lmp_limb_t *restrict ap, size_t an,
-    const lmp_limb_t *restrict bp, size_t bn);
+    const lmp_limb_t *restrict ap, size_t m,
+    const lmp_limb_t *restrict bp, size_t n);
 
-size_t lmp_diff_mn_size(
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t *const restrict bp, const size_t bn);
+/*****************************************************************************
+ * Subtraction
+ *****************************************************************************/
+
+lmp_limb_t lmp_sub_mb(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t borrow);
+
+lmp_limb_t lmp_sub_mmb(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t borrow);
 
 void lmp_sub_mn(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);
+
+size_t lmp_diff_mn_size(
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn);
 
 /*****************************************************************************
  * Multiplication

@@ -47,6 +47,7 @@ int lmp_cmp_mm(
             return ap[m] > bp[m] ? 1 : -1;
         }
     }
+
     return 0;
 }
 #endif
@@ -62,6 +63,7 @@ int lmp_cmp_mn(
     if (an < bn) {
         return -1;
     }
+
     return lmp_cmp_mm(ap, bp, an);
 }
 #endif
@@ -76,6 +78,7 @@ lmp_limb_t lmp_addc_m(
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c)
 {
     size_t i = 0;
+
     for (; i < m && c; i++) {
         lmp_limb_t a = rp[i] = ap[i] + 1;
         if (a) break;
@@ -84,27 +87,30 @@ lmp_limb_t lmp_addc_m(
         rp[i] = ap[i];
         c = 0;
     }
+
     return c;
 }
 #endif
 
-#ifndef LMP_ADDC_MM
-lmp_limb_t lmp_addc_mm(
+#ifndef LMP_ADDC_MMC
+lmp_limb_t lmp_addc_mmc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
-    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t c)
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t carry)
 {
     for (size_t i = 0; i < m; i++) {
-        lmp_dlimb_t x = c;
+        lmp_dlimb_t x = carry;
         x += ap[i];
         x += bp[i];
         rp[i] = (lmp_limb_t) x;
-        c = (lmp_limb_t) (x >> LMP_LIMB_W);
+        carry = (lmp_limb_t) (x >> LMP_LIMB_W);
     }
-    return c;
+
+    return carry;
 }
 #endif
 
+#ifndef LMP_ADDC_MN
 lmp_limb_t lmp_addc_mn(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
@@ -115,10 +121,12 @@ lmp_limb_t lmp_addc_mn(
     ASSERT(an >= bn);
     ASSERT(c <= 1);
 
-    lmp_limb_t co = lmp_addc_mm(rp, ap, bp, bn, c);
+    lmp_limb_t co = lmp_addc_mmc(rp, ap, bp, bn, c);
     return lmp_addc_m(&rp[bn], &ap[bn], an - bn, co);
 }
+#endif
 
+#ifndef LMP_ADD_MN
 void lmp_add_mn(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
@@ -133,7 +141,9 @@ void lmp_add_mn(
         rp[MAX(an, bn) - 1] = 1;
     }
 }
+#endif
 
+#ifndef LMP_ADD_MN_SIZE
 size_t lmp_add_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
@@ -169,10 +179,53 @@ size_t lmp_add_mn_size(
     }
     return an + (ap[0] + bp[0] < ap[0]);
 }
+#endif
 
 /******************************************************************************
  * Subtraction
  *****************************************************************************/
+
+#ifndef LMP_SUB_MB
+lmp_limb_t lmp_sub_mb(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t borrow)
+{
+    size_t i = 0;
+
+    for (; i < m && borrow; i++) {
+        lmp_limb_t a = ap[i];
+        rp[i] = a - 1;
+        if (a) break;
+    }
+    for (++i; i < m; i++) {
+        rp[i] = ap[i];
+        borrow = 0;
+    }
+
+    return borrow;
+}
+#endif
+
+#ifndef LMP_SUB_MMB
+lmp_limb_t lmp_sub_mmb(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m, lmp_limb_t borrow)
+{
+    size_t i = 0;
+
+    lmp_dlimb_t x = -borrow;
+    for (; i < m; i++) {
+        x += ap[i];
+        x &= LMP_LIMB_MAX; // ignore carry from previous addition
+        x -= bp[i];
+        rp[i] = (lmp_limb_t) x;
+        x >>= LMP_LIMB_W;
+    }
+
+    return -((lmp_limb_t) x);
+}
+#endif
 
 static inline size_t lmp_sub_xx_size(
     const lmp_limb_t *const restrict ap,
