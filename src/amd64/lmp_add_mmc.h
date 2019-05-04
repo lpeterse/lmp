@@ -19,6 +19,7 @@ lmp_limb_t lmp_add_mmc(
         "bt      $0, %[m];"
         "jnc     1f;"
         // Do one addition in advance if m is odd
+        "bt      $0, %[carry];"
         "addq    (%[ap],%[m],8), %[carry];"
         "adcq    (%[bp],%[m],8), %[carry];"
         "movq    %[carry], (%[rp],%[m],8);"
