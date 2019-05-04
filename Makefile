@@ -15,8 +15,8 @@ bench-noasm: lmp_bench_noasm.out
 	./$<
 
 test: lmp_test.out lmp_test_noasm.out
-	./lmp_test.out
 	./lmp_test_noasm.out
+	./lmp_test.out
 
 dump: lmp.o
 	gdb $< -batch -ex 'disassemble ${FUNCTION}'
@@ -26,8 +26,11 @@ clean:
 
 # Other targets
 
-lmp.c: lmp.h lmp_include.h lmp_amd64.h
+lmp.c: lmp.h src/*.h src/*/*.h
 	touch lmp.c
+
+lmp.s: lmp.c
+	$(CC) $(CFLAGS) -S $<
 
 lmp.o: lmp.c
 	$(CC) $(CFLAGS) -c $<
@@ -40,6 +43,9 @@ lmp.a: lmp.o
 
 lmp.so: lmp.c
 	$(CC) $(CFLAGS) -shared $< -o $@
+
+lmp_test.c: test/*.h
+	touch $@
 
 lmp_test.out: lmp_test.c lmp.c
 	$(CC) $(CFLAGS) -DLMP_ASSERT $< lmp.c -o $@

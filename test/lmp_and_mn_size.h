@@ -21,7 +21,7 @@ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+subSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
 INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
@@ -29,45 +29,23 @@ POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-#ifndef LMP_INCLUDE_H
-#define LMP_INCLUDE_H
+#define LMP_AND_MN_SIZE_TESTS() { \
+        lmp_and_mn_size_test_0001(); \
+        lmp_and_mn_size_test_0002(); \
+    }
 
-#define MIN(x,y)                (x > y ? y : x)
-#define MAX(x,y)                (x > y ? x : y)
-
-#ifdef LMP_ASSERT
-    #include <assert.h>
-    #define ASSERT(x)           assert(x)
-#elif defined(__clang__)
-    #define ASSERT(x)           __builtin_assume(x)
-#else
-    #define ASSERT(x)
-#endif
-
-#if __WORDSIZE == 64 || __WORDSIZE == 32
-    #define POPCOUNT(x)         __builtin_popcountl(x)
-    #define CLZ(x)              __builtin_clzl(x)
-    #define ADDC(x,y,ci,co)     __builtin_addcl(x,y,ci,co)
-#endif
-
-// This determines in pure C whether the machine is little endian.
-// With any sufficiently smart compiler (-O2) this gets optimized away.
-//
-// Dump of assembler code for function is_little_endian:
-//   0x0000000000000250 <+0>:     mov    $0x1,%eax
-//   0x0000000000000255 <+5>:     retq
-static inline int is_little_endian() {
-    lmp_limb_t t = 0x01020304050607UL;
-    uint8_t *p   = (uint8_t *) &t;
-    lmp_limb_t q =((lmp_limb_t) p[0] <<  0)
-                | ((lmp_limb_t) p[1] <<  8)
-                | ((lmp_limb_t) p[2] << 16)
-                | ((lmp_limb_t) p[3] << 24)
-                | ((lmp_limb_t) p[4] << 32)
-                | ((lmp_limb_t) p[5] << 40)
-                | ((lmp_limb_t) p[6] << 48)
-                | ((lmp_limb_t) p[7] << 56);
-    return t == q;
+static void lmp_and_mn_size_test_0001(void)
+{
+    lmp_limb_t ap[] = {};
+    lmp_limb_t bp[] = {};
+    size_t rn = lmp_and_mn_size(ap, 0L, bp, 0L);
+    ASSERT_SIZE_EQUAL(rn, 0L);
 }
 
-#endif
+static void lmp_and_mn_size_test_0002(void)
+{
+    lmp_limb_t ap[] = { LMP_LIMB_MIN,     LMP_LIMB_MAX, LMP_LIMB_MIN + 2, LMP_LIMB_MIN + 3 };
+    lmp_limb_t bp[] = { LMP_LIMB_MIN + 1, LMP_LIMB_MAX, LMP_LIMB_MIN + 2, LMP_LIMB_MIN + 3 };
+    size_t rn = lmp_xor_mn_size(ap, 4L, bp, 4L);
+    ASSERT_SIZE_EQUAL(rn, 1L);
+}

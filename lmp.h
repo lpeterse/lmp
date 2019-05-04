@@ -117,9 +117,9 @@ lmp_limb_t lmp_sub_mmb(
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t borrow);
 
 void lmp_sub_mn(
-          lmp_limb_t *const restrict rp, const size_t rn,
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t *const restrict bp, const size_t bn);
+          lmp_limb_t *restrict rp, size_t rn,
+    const lmp_limb_t *restrict ap, size_t an,
+    const lmp_limb_t *restrict bp, size_t bn);
 
 size_t lmp_diff_mn_size(
     const lmp_limb_t *restrict ap, size_t an,

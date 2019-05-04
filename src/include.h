@@ -29,55 +29,47 @@ POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-#include "src/include.h"
+#ifndef LMP_SRC_INCLUDE_H
+#define LMP_SRC_INCLUDE_H
 
-#if !defined(LMP_NOASM) && defined(__amd64__)
-#include "src/amd64/lmp_cpuid.h"
-#include "src/amd64/lmp_add_mmc.h"
-#include "src/amd64/lmp_sub_mmb.h"
-#include "src/amd64/lmp_cmp_mm.h"
-#include "src/amd64/lmp_popcount.h"
+#include "../lmp.h"
+
+#define MIN(x,y)                (x > y ? y : x)
+#define MAX(x,y)                (x > y ? x : y)
+
+#ifdef LMP_ASSERT
+    #include <assert.h>
+    #define ASSERT(x)           assert(x)
+#elif defined(__clang__)
+    #define ASSERT(x)           __builtin_assume(x)
+#else
+    #define ASSERT(x)
 #endif
 
-#include "src/generic/lmp_add_mc.h"
-#include "src/generic/lmp_add_mmc.h"
-#include "src/generic/lmp_add_mnc.h"
-#include "src/generic/lmp_add_mn.h"
-#include "src/generic/lmp_add_mn_size.h"
+#if __WORDSIZE == 64 || __WORDSIZE == 32
+    #define POPCOUNT(x)         __builtin_popcountl(x)
+    #define CLZ(x)              __builtin_clzl(x)
+    #define ADDC(x,y,ci,co)     __builtin_addcl(x,y,ci,co)
+#endif
 
-#include "src/generic/lmp_sub_mb.h"
-#include "src/generic/lmp_sub_mmb.h"
-#include "src/generic/lmp_sub_mn.h"
-#include "src/generic/lmp_sub_mn_size.h"
+// This determines in pure C whether the machine is little endian.
+// With any sufficiently smart compiler (-O2) this gets optimized away.
+//
+// Dump of assembler code for function is_little_endian:
+//   0x0000000000000250 <+0>:     mov    $0x1,%eax
+//   0x0000000000000255 <+5>:     retq
+static inline int is_little_endian() {
+    lmp_limb_t t = 0x01020304050607UL;
+    uint8_t *p   = (uint8_t *) &t;
+    lmp_limb_t q =((lmp_limb_t) p[0] <<  0)
+                | ((lmp_limb_t) p[1] <<  8)
+                | ((lmp_limb_t) p[2] << 16)
+                | ((lmp_limb_t) p[3] << 24)
+                | ((lmp_limb_t) p[4] << 32)
+                | ((lmp_limb_t) p[5] << 40)
+                | ((lmp_limb_t) p[6] << 48)
+                | ((lmp_limb_t) p[7] << 56);
+    return t == q;
+}
 
-#include "src/generic/lmp_lshift.h"
-#include "src/generic/lmp_lshift_size.h"
-
-#include "src/generic/lmp_rshift.h"
-#include "src/generic/lmp_rshift_size.h"
-
-#include "src/generic/lmp_mul_m1.h"
-#include "src/generic/lmp_mul_mn.h"
-#include "src/generic/lmp_mul_mn_size.h"
-
-#include "src/generic/lmp_cmp_mm.h"
-#include "src/generic/lmp_cmp_mn.h"
-
-#include "src/generic/lmp_and_mn.h"
-#include "src/generic/lmp_and_mn_size.h"
-
-#include "src/generic/lmp_ior_mn.h"
-#include "src/generic/lmp_ior_mn_size.h"
-
-#include "src/generic/lmp_xor_mn.h"
-#include "src/generic/lmp_xor_mn_size.h"
-
-#include "src/generic/lmp_clearbit.h"
-#include "src/generic/lmp_clearbit_size.h"
-
-#include "src/generic/lmp_setbit.h"
-#include "src/generic/lmp_setbit_size.h"
-
-#include "src/generic/lmp_testbit.h"
-
-#include "src/generic/lmp_popcount.h"
+#endif
