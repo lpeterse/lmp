@@ -80,6 +80,9 @@ int lmp_cmp_mn(
  * Addition
  *****************************************************************************/
 
+lmp_limb_t lmp_add_1c(
+    const lmp_limb_t a, const lmp_limb_t b, lmp_limb_t *carry);
+
 lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c);
@@ -121,7 +124,7 @@ void lmp_sub_mn(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn);
 
-size_t lmp_diff_mn_size(
+size_t lmp_sub_mn_size(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn);
 
@@ -218,9 +221,11 @@ void lmp_clearbit(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi);
 
-size_t lmp_popcount(
-    const lmp_limb_t *restrict ap, size_t an);
+size_t lmp_popcount_1(
+    lmp_limb_t a);
 
+size_t lmp_popcount_m(
+    const lmp_limb_t *restrict ap, size_t an);
 
 #ifdef __cplusplus
  }

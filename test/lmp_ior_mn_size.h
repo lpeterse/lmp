@@ -37,8 +37,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 static void lmp_ior_mn_size_test_0001(void)
 {
-    lmp_limb_t ap[] = {};
-    lmp_limb_t bp[] = {};
+    lmp_limb_t ap[] = { LMP_LIMB_INI };
+    lmp_limb_t bp[] = { LMP_LIMB_INI };
     size_t rn = lmp_ior_mn_size(ap, 0L, bp, 0L);
     ASSERT_SIZE_EQUAL(rn, 0L);
 }

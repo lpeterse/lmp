@@ -1,8 +1,8 @@
 .PHONY: all bench bench-noasm test dump clean
 
 AR     := ar
-CC     := clang
-CFLAGS := -pedantic -Wall -O2 # -fno-unroll-loops
+CC     := gcc
+CFLAGS := -Wall -std=c99 -O2 -fno-unroll-loops
 
 # PHONY targets
 

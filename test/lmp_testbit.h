@@ -37,7 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 static void lmp_testbit_test_0001(void)
 {
-    lmp_limb_t ap[] = {};
+    lmp_limb_t ap[] = { LMP_LIMB_INI };
     size_t rn = lmp_testbit(ap, 0L, 123L);
     ASSERT_SIZE_EQUAL(rn, 0L);
 }

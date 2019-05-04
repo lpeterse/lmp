@@ -39,7 +39,6 @@ static void lmp_sub_mmb_test_0001(void)
     lmp_limb_t bp[] = { LMP_LIMB_C(1) };
     lmp_limb_t rp[] = RP;
     size_t an = SZ(ap);
-    size_t bn = SZ(bp);
     lmp_limb_t borrow = lmp_sub_mmb(rp, ap, bp, an, 0);
     ASSERT_LIMB_EQUAL(borrow, 0L);
     ASSERT_LIMB_EQUAL(rp[0], 0L);

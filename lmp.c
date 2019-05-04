@@ -33,12 +33,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #if !defined(LMP_NOASM) && defined(__amd64__)
 #include "src/amd64/lmp_cpuid.h"
+#include "src/amd64/lmp_add_1c.h"
 #include "src/amd64/lmp_add_mmc.h"
 #include "src/amd64/lmp_sub_mmb.h"
 #include "src/amd64/lmp_cmp_mm.h"
-#include "src/amd64/lmp_popcount.h"
+#include "src/amd64/lmp_popcount_m.h"
 #endif
 
+#include "src/generic/lmp_add_1c.h"
 #include "src/generic/lmp_add_mc.h"
 #include "src/generic/lmp_add_mmc.h"
 #include "src/generic/lmp_add_mnc.h"
@@ -80,4 +82,5 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "src/generic/lmp_testbit.h"
 
-#include "src/generic/lmp_popcount.h"
+#include "src/generic/lmp_popcount_1.h"
+#include "src/generic/lmp_popcount_m.h"

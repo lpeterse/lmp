@@ -48,13 +48,19 @@ POSSIBILITY OF SUCH DAMAGE.
 
 typedef unsigned long long cycles_t;
 
+cycles_t rdtsc(){
+    unsigned int lo,hi;
+    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((cycles_t)hi << 32) | lo;
+}
+
 #define ITERATIONS 1000
 #define BENCH(c, run) {\
         cycles_t x,y; c = -1;\
         for (size_t i = 0; i < ITERATIONS; i++) { \
-            x = __builtin_readcyclecounter(); \
+            x = rdtsc(); \
             run; \
-            y = __builtin_readcyclecounter(); \
+            y = rdtsc(); \
             if (y - x < c) c = y - x; \
         }; \
     }
@@ -71,14 +77,14 @@ typedef unsigned long long cycles_t;
     }
 #define ASSERT_LIMB_EQUAL(i, n1, v1, n2, v2) {\
         if ((v1) != (v2)) {\
-            printf ("%s failed at limb %ld:\n  %s: 0x%016lx\n  %s: 0x%016lx\n", __FUNCTION__, i, n1, v1, n2, v2); \
+            printf ("%s failed at limb %ld:\n  %s: 0x%016lx\n  %s: 0x%016lx\n", __func__, i, n1, v1, n2, v2); \
             exit(1); \
         }\
     }
 #define ASSERT_SIZE_EQUAL(value, expected) {\
         if ((expected) != (value)) {\
             printf ("%s failed: %s:\n  expected: %ld\n  actual:   %ld\n", \
-                __FUNCTION__, #value, expected, value); \
+                __func__, #value, expected, value); \
             exit(1); \
         }\
     }
@@ -526,7 +532,7 @@ static void bench_xor_0001(void)
     }
 }
 
-static void bench_popcount_0001(void)
+static void bench_popcount_m_0001(void)
 {
     printf("\n%s: r = popcount(a) where an = 3\n", __FUNCTION__);
     size_t n = 3;
@@ -543,7 +549,7 @@ static void bench_popcount_0001(void)
         p1 = mpn_popcount(ap, n);
     });
     BENCH(c2, {
-        p2 = lmp_popcount(ap, n);
+        p2 = lmp_popcount_m(ap, n);
     });
     BENCH(c3, {
         p3 = nn_popcount(ap, n);
@@ -555,7 +561,7 @@ static void bench_popcount_0001(void)
     ASSERT_SIZE_EQUAL(p1, p3);
 }
 
-static void bench_popcount_0002(void)
+static void bench_popcount_m_0002(void)
 {
     printf("\n%s: r = popcount(a) where an = 300\n", __FUNCTION__);
     size_t n = 300;
@@ -572,7 +578,7 @@ static void bench_popcount_0002(void)
         p1 = mpn_popcount(ap, n);
     });
     BENCH(c2, {
-        p2 = lmp_popcount(ap, n);
+        p2 = lmp_popcount_m(ap, n);
     });
     BENCH(c3, {
         p3 = nn_popcount(ap, n);
@@ -603,6 +609,6 @@ int main()
     bench_rshift_0001();
     bench_rshift_0002();
     bench_xor_0001();
-    bench_popcount_0001();
-    bench_popcount_0002();
+    bench_popcount_m_0001();
+    bench_popcount_m_0002();
 }

@@ -42,7 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define ASSERT_SIZE_EQUAL(value, expected) {\
         if ((expected) != (value)) {\
             printf ("%s failed: %s:\n  expected: %ld\n  actual:   %ld\n", \
-                __FUNCTION__, #value, expected, value); \
+                __func__, #value, expected, value); \
             exit(1); \
         }\
     }
@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define ASSERT_INT_EQUAL(value, expected) {\
         if ((expected) != (value)) {\
             printf ("%s failed: %s:\n  expected: %d\n  actual:   %d\n", \
-                __FUNCTION__, #value, expected, value); \
+                __func__, #value, expected, value); \
             exit(1); \
         }\
     }
@@ -58,11 +58,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #define ASSERT_LIMB_EQUAL(value, expected) {\
         if ((expected) != (value)) {\
             printf ("%s failed: %s:\n  expected: 0x%016lx\n  actual:   0x%016lx\n", \
-                __FUNCTION__, #value, expected, value); \
+                __func__, #value, expected, value); \
             exit(1); \
         }\
     }
 
+#include "test/lmp_add_1c.h"
 #include "test/lmp_and_mn.h"
 #include "test/lmp_and_mn_size.h"
 #include "test/lmp_clearbit_size.h"
@@ -82,9 +83,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "test/lmp_testbit.h"
 #include "test/lmp_xor_mn_size.h"
 #include "test/lmp_xor_mn.h"
-#include "test/lmp_popcount.h"
+#include "test/lmp_popcount_m.h"
 
 int main(void) {
+    LMP_ADD_1C_TESTS();
     LMP_AND_MN_SIZE_TESTS();
     LMP_AND_MN_TESTS();
     LMP_CLEARBIT_SIZE_TESTS();
@@ -104,5 +106,5 @@ int main(void) {
     LMP_TESTBIT_TESTS();
     LMP_XOR_MN_SIZE_TESTS();
     LMP_XOR_MN_TESTS();
-    LMP_POPCOUNT_TESTS();
+    LMP_POPCOUNT_M_TESTS();
 }

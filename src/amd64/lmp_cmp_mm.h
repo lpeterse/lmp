@@ -25,7 +25,7 @@ int lmp_cmp_mm(
         "and     $2, %k[res];"
         "dec     %k[res];"
     "3:;"
-        : [m] "+r" (m), [res] "=a" (res), [tmp] "=r" (tmp)
+        : [m] "+r" (m), [res] "=a" (res), [tmp] "+r" (tmp)
         : [ap] "r" (ap), [bp] "r" (bp)
         : "cc"
     );

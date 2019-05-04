@@ -23,7 +23,7 @@ void lmp_mul_mn(
         {
             ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
             mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
-            rp[ai + bi] = ADDC(rp[ai+bi],     (lmp_limb_t) ab, addc, &addc);
+            rp[ai + bi] = lmp_add_1c(rp[ai+bi], (lmp_limb_t) ab, &addc);
         }
         if (ai + 1 < an || mulc || addc)
         {
