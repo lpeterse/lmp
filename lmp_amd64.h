@@ -47,21 +47,21 @@ static inline unsigned long lmp_cpu_get_features()
     __asm__ (
         // Save clobbered registers on stack in order to not having to
         // declare them which turned out to confuse the register allocator.
-        "pushq %%rbx;"
-        "pushq %%rcx;"
-        "pushq %%rdx;"
-        "xor %%rcx, %%rcx;"
-        "xor %%rdx, %%rdx;"
+        "pushq   %%rbx;"
+        "pushq   %%rcx;"
+        "pushq   %%rdx;"
+        "xor     %%rcx, %%rcx;"
+        "xor     %%rdx, %%rdx;"
         // Call CPUID function 1.
-        "mov $1, %%eax;"
+        "mov     $1, %%eax;"
         "cpuid;"
-        "mov %%edx, %%eax;"
-        "shl $32, %%rax;"
-        "xor %%rcx, %%rax;"
+        "mov     %%edx, %%eax;"
+        "shl     $32, %%rax;"
+        "xor     %%rcx, %%rax;"
         // Restore registers.
-        "popq %%rdx;"
-        "popq %%rcx;"
-        "popq %%rbx;"
+        "popq    %%rdx;"
+        "popq    %%rcx;"
+        "popq    %%rbx;"
         : "=a" (r)
         :: "cc"
     );
@@ -80,12 +80,47 @@ static inline unsigned long lmp_cpu_has_feature(unsigned long feature)
     return lmp_cpu_features & feature;
 }
 
+#define LMP_CMP_MM
+int lmp_cmp_mm(
+    const lmp_limb_t *restrict ap,
+    const lmp_limb_t *restrict bp, size_t m)
+{
+    long res;
+    long tmp;
+
+    __asm__ (
+        "xorq    %[res], %[res];"
+        "test    %[m], %[m];"
+        "je      3f;"
+        "xchg    %k[res], %k[res];" // align loop
+    "1:;"
+        "dec     %[m];"
+        "jz      2f;" // fuses with dec
+        "movq    (%[bp],%[m],8), %[tmp];"
+        "cmpq    (%[ap],%[m],8), %[tmp];"
+        "je      1b;" // fuses with cmp
+    "2:;"
+        "movq    (%[bp],%[m],8), %[tmp];"
+        "cmpq    (%[ap],%[m],8), %[tmp];"
+        "je      3f;"
+        "sbb     %k[res], %k[res];"
+        "and     $2, %k[res];"
+        "dec     %k[res];"
+    "3:;"
+        : [m] "+r" (m), [res] "=a" (res), [tmp] "=r" (tmp)
+        : [ap] "r" (ap), [bp] "r" (bp)
+        : "cc"
+    );
+
+    return (int) res;
+}
+
 /*****************************************************************************
  * Addition
  *****************************************************************************/
 
-#define LMP_ADDC_MMC
-lmp_limb_t lmp_addc_mmc(
+#define LMP_ADD_MMC
+lmp_limb_t lmp_add_mmc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t carry)

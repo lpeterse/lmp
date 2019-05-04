@@ -129,7 +129,7 @@ static void bench_cmp_mm_0002(void)
     }
 }
 
-static void bench_addc_mmc_0001(void)
+static void bench_add_mmc_0001(void)
 {
     printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
     size_t n = 3000;
@@ -146,7 +146,7 @@ static void bench_addc_mmc_0001(void)
         mpn_add(rp0, ap, n, bp, n);
     });
     BENCH(LMP, {
-        lmp_addc_mmc(rp1, ap, bp, n, 0);
+        lmp_add_mmc(rp1, ap, bp, n, 0);
     });
     BENCH(BSDNT, {
         nn_add_mc(rp2, ap, bp, n, 0);
@@ -545,20 +545,20 @@ int main()
     printf("Benchmarking %s...\n", LMP);
     printf("_________________________________________________\n");
 
-    //bench_cmp_mm_0001();
-    //bench_cmp_mm_0002();
-    bench_addc_mmc_0001();
-    //bench_add_mn_0001();
+    bench_cmp_mm_0001();
+    bench_cmp_mm_0002();
+    bench_add_mmc_0001();
+    bench_add_mn_0001();
 
     bench_sub_mb_0001();
     bench_sub_mmb_0001();
-    //bench_sub_mn_0001();
-    //bench_mul_mn_0001();
-    //bench_lshift_0001();
-    //bench_lshift_0002();
-    //bench_rshift_0001();
-    //bench_rshift_0002();
-    //bench_xor_0001();
+    bench_sub_mn_0001();
+    bench_mul_mn_0001();
+    bench_lshift_0001();
+    bench_lshift_0002();
+    bench_rshift_0001();
+    bench_rshift_0002();
+    bench_xor_0001();
     bench_popcount_0001();
     bench_popcount_0002();
 }

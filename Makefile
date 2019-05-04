@@ -2,7 +2,7 @@
 
 AR     := ar
 CC     := clang
-CFLAGS := -pedantic -Wall -O2 #-fno-unroll-loops
+CFLAGS := -pedantic -Wall -O2 # -fno-unroll-loops
 
 # PHONY targets
 
@@ -48,7 +48,7 @@ lmp_test_noasm.out: lmp_test.c lmp.c
 	$(CC) $(CFLAGS) -DLMP_ASSERT -DLMP_NOASM $< lmp.c -o $@
 
 lmp_bench.out: lmp_bench.c lmp.o
-	$(CC) $(CFLAGS) $^ -s -lbsdnt -lgmp -o $@
+	$(CC) $(CFLAGS) $^ -fno-unroll-loops -s -lbsdnt -lgmp -o $@
 
 lmp_bench_noasm.out: lmp_bench.c lmp_noasm.o
-	$(CC) $(CFLAGS) $^ -s -lbsdnt -lgmp -o $@
+	$(CC) $(CFLAGS) $^ -fno-unroll-loops -s -lbsdnt -lgmp -o $@

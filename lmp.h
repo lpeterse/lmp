@@ -84,7 +84,7 @@ lmp_limb_t lmp_addc_m(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t c);
 
-lmp_limb_t lmp_addc_mmc(
+lmp_limb_t lmp_add_mmc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t carry);

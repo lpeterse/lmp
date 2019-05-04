@@ -44,7 +44,7 @@ int lmp_cmp_mm(
 {
     while (m--) {
         if (ap[m] != bp[m]) {
-            return ap[m] > bp[m] ? 1 : -1;
+            if (ap[m] > bp[m]) {return 1;} else { return -1;};
         }
     }
 
@@ -92,8 +92,8 @@ lmp_limb_t lmp_addc_m(
 }
 #endif
 
-#ifndef LMP_ADDC_MMC
-lmp_limb_t lmp_addc_mmc(
+#ifndef LMP_ADD_MMC
+lmp_limb_t lmp_add_mmc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t carry)
@@ -121,7 +121,7 @@ lmp_limb_t lmp_addc_mn(
     ASSERT(an >= bn);
     ASSERT(c <= 1);
 
-    lmp_limb_t co = lmp_addc_mmc(rp, ap, bp, bn, c);
+    lmp_limb_t co = lmp_add_mmc(rp, ap, bp, bn, c);
     return lmp_addc_m(&rp[bn], &ap[bn], an - bn, co);
 }
 #endif
