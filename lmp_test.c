@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SZ(x) (sizeof(x) / LMP_LIMB_S)
 
 #define RP { LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI, \
+             LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI, \
              LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI, LMP_LIMB_INI }
              
 #define ASSERT_SIZE_EQUAL(value, expected) {\
@@ -74,6 +75,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "test/lmp_ior_mn_size.h"
 #include "test/lmp_lshift_size.h"
 #include "test/lmp_lshift.h"
+#include "test/lmp_mul_m1.h"
 #include "test/lmp_mul_mn.h"
 #include "test/lmp_rshift.h"
 #include "test/lmp_setbit.h"
@@ -97,6 +99,7 @@ int main(void) {
     LMP_IOR_MN_SIZE_TESTS();
     LMP_LSHIFT_TESTS();
     LMP_LSHIFT_SIZE_TESTS();
+    LMP_MUL_M1_TESTS();
     LMP_MUL_MN_TESTS();
     LMP_RSHIFT_TESTS();
     LMP_SETBIT_TESTS();

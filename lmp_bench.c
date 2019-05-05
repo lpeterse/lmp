@@ -65,17 +65,17 @@ cycles_t rdtsc(){
         }; \
     }
 #define COMPARE(gmp, lmp, bsdnt) {\
-        printf("  %-20s %lld\n", GMP, gmp); \
+        printf("%10lld", gmp); \
         if (lmp <= gmp && lmp <= bsdnt) { \
-            printf("  %-20s \x1b[32;1m%lld\x1b[0m\n", LMP, lmp); \
+            printf("\x1b[32;1m%10lld\x1b[0m",lmp); \
         } else if (lmp <= gmp * 105 / 100 && lmp <= bsdnt * 105 / 100) { \
-            printf("  %-20s \x1b[34;1m%lld\x1b[0m\n", LMP, lmp); \
+            printf("\x1b[34;1m%10lld\x1b[0m", lmp); \
         } else if (lmp <= gmp || lmp <= bsdnt) { \
-            printf("  %-20s \x1b[33;1m%lld\x1b[0m\n", LMP, lmp); \
+            printf("\x1b[33;1m%10lld\x1b[0m", lmp); \
         } else { \
-            printf("  %-20s \x1b[31;1m%lld\x1b[0m\n", LMP, lmp); \
+            printf("\x1b[31;1m%10lld\x1b[0m", lmp); \
         } \
-        printf("  %-20s %lld\n", BSDNT, bsdnt); \
+        printf("%10lld\n", bsdnt); \
     }
 #define ASSERT_LIMB_EQUAL(i, n1, v1, n2, v2) {\
         if ((v1) != (v2)) {\
@@ -93,7 +93,7 @@ cycles_t rdtsc(){
 
 static void bench_cmp_mm_0001(void)
 {
-    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 3000;
     
     lmp_limb_t ap[n];
@@ -125,7 +125,7 @@ static void bench_cmp_mm_0001(void)
 
 static void bench_cmp_mm_0002(void)
 {
-    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 3000;
     
     lmp_limb_t ap[n];
@@ -156,7 +156,7 @@ static void bench_cmp_mm_0002(void)
 
 static void bench_add_mmc_0001(void)
 {
-    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 3000;
     
     lmp_limb_t ap[n];
@@ -188,7 +188,7 @@ static void bench_add_mmc_0001(void)
 
 static void bench_add_mn_0001(void)
 {
-    printf("\n%s: r = a + b where an = 3000, bn = 2500\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 3000;
     size_t bn = 2500;
 
@@ -224,7 +224,7 @@ static void bench_add_mn_0001(void)
 
 static void bench_sub_mb_0001(void)
 {
-    printf("\n%s: r = a - 1 where m = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t m = 3000;
     
     lmp_limb_t ap[m];
@@ -258,7 +258,7 @@ static void bench_sub_mb_0001(void)
 
 static void bench_sub_mmb_0001(void)
 {
-    printf("\n%s: r = a - b where m = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t m = 3000;
     
     lmp_limb_t ap[m], bp[m];
@@ -293,7 +293,7 @@ static void bench_sub_mmb_0001(void)
 
 static void bench_sub_mn_0001(void)
 {
-    printf("\n%s: r = a + b where an = ab = 3000\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 3000;
     size_t bn = 3000;
 
@@ -327,9 +327,40 @@ static void bench_sub_mn_0001(void)
     }
 }
 
+static void bench_mul_m1_0001(void)
+{
+    printf("%-30s", __func__);
+    size_t m = 300;
+    lmp_limb_t ap[m];
+    lmp_limb_t b;
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, m);
+    nn_random(&b, rnd, 1);
+    lmp_limb_t rp1[m], rp2[m], rp3[m];
+    cycles_t c1, c2, c3;
+
+    BENCH(c1, {
+        mpn_mul_1(rp1, ap, m, b);
+    });
+    BENCH(c2, {
+        lmp_mul_m1(rp2, ap, m, b);
+    });
+    BENCH(c3, {
+        nn_mul1(rp3, ap, m, b);
+    });
+
+    COMPARE(c1, c2, c3);
+
+    for (size_t i = 0; i < m; i++) {
+        ASSERT_LIMB_EQUAL(i, GMP, rp1[i], LMP,   rp2[i]);
+        ASSERT_LIMB_EQUAL(i, GMP, rp1[i], BSDNT, rp3[i]);
+    }
+}
+
 static void bench_mul_mn_0001(void)
 {
-    printf("\n%s: r = a * b where an = 300, bn = 210\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 300;
     size_t bn = 210;
 
@@ -363,7 +394,7 @@ static void bench_mul_mn_0001(void)
 
 static void bench_lshift_0001(void)
 {
-    printf("\n%s: r = a << 23 where an = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 300;
     size_t bits = 23;
 
@@ -399,7 +430,7 @@ static void bench_lshift_0001(void)
 
 static void bench_lshift_0002(void)
 {
-    printf("\n%s: r = a << 16 where an = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 300;
     size_t bits = 16;
 
@@ -435,7 +466,7 @@ static void bench_lshift_0002(void)
 
 static void bench_rshift_0001(void)
 {
-    printf("\n%s: r = a >> 23 where an = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 300;
     size_t bits = 23;
 
@@ -469,7 +500,7 @@ static void bench_rshift_0001(void)
 
 static void bench_rshift_0002(void)
 {
-    printf("\n%s: r = a >> 16 where an = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t an = 300;
     size_t bits = 16;
 
@@ -501,7 +532,7 @@ static void bench_rshift_0002(void)
 
 static void bench_xor_0001(void)
 {
-    printf("\n%s: r = a ^ b where an = bn = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 300;
 
     lmp_limb_t ap[n];
@@ -536,7 +567,7 @@ static void bench_xor_0001(void)
 
 static void bench_popcount_m_0001(void)
 {
-    printf("\n%s: r = popcount(a) where an = 3\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 3;
 
     lmp_limb_t ap[n];
@@ -565,7 +596,7 @@ static void bench_popcount_m_0001(void)
 
 static void bench_popcount_m_0002(void)
 {
-    printf("\n%s: r = popcount(a) where an = 300\n", __FUNCTION__);
+    printf("%-30s", __func__);
     size_t n = 300;
 
     lmp_limb_t ap[n];
@@ -595,7 +626,8 @@ static void bench_popcount_m_0002(void)
 int main()
 {
     printf("Benchmarking %s...\n", LMP);
-    printf("_________________________________________________\n");
+    printf("____________________________________________________________\n");
+    printf("                                     GMP       LMP     BSDNT\n\n");
 
     bench_cmp_mm_0001();
     bench_cmp_mm_0002();
@@ -605,6 +637,7 @@ int main()
     bench_sub_mb_0001();
     bench_sub_mmb_0001();
     bench_sub_mn_0001();
+    bench_mul_m1_0001();
     bench_mul_mn_0001();
     bench_lshift_0001();
     bench_lshift_0002();

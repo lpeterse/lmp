@@ -1,21 +1,15 @@
 #ifndef LMP_MUL_M1
-void lmp_mul_m1(
-          lmp_limb_t *const restrict rp,
-    const lmp_limb_t *const restrict ap, const size_t an,
-    const lmp_limb_t b)
+lmp_limb_t lmp_mul_m1(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t m, lmp_limb_t b)
 {
-    // TODO: asm is different when carry is lmp_limb_t.
-    // Figure out which is better.
-    lmp_dlimb_t carry = 0;
-    for (size_t i = 0; i < an; i++)
+    lmp_dlimb_t x = 0;
+    for (size_t i = 0; i < m; i++)
     {
-        // Extended integer multiplication (128bit on x86_64)
-        lmp_dlimb_t x = (lmp_dlimb_t) ap[i] * b + carry;
-        carry = (x >> LMP_LIMB_W);
+        x += (lmp_dlimb_t) ap[i] * b;
         rp[i] = (lmp_limb_t) x;
+        x >>= LMP_LIMB_W;
     }
-    if (carry) {
-        rp[an] = (lmp_limb_t) carry;
-    }
+    return (lmp_limb_t) x;
 }
 #endif

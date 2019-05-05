@@ -36,6 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "src/amd64/lmp_add_1c.h"
 #include "src/amd64/lmp_add_mmc.h"
 #include "src/amd64/lmp_sub_mmb.h"
+#include "src/amd64/lmp_mul_m1.h"
 #include "src/amd64/lmp_cmp_mm.h"
 #include "src/amd64/lmp_popcount_m.h"
 #endif
