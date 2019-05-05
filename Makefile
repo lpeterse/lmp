@@ -2,7 +2,7 @@
 
 AR     := ar
 CC     := gcc
-CFLAGS := -Wall -std=c99 -O2 -fno-unroll-loops
+CFLAGS := -Wall -std=c99 -O2 #-fno-unroll-loops
 
 # PHONY targets
 

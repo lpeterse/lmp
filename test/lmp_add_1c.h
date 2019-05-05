@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 
 #define LMP_ADD_1C_TESTS() { \
-        lmp_add_1c_test_0002(); \
+        lmp_add_1c_test_0001(); \
         lmp_add_1c_test_0002(); \
         lmp_add_1c_test_0003(); \
         lmp_add_1c_test_0004(); \

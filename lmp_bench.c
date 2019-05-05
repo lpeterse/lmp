@@ -68,7 +68,9 @@ cycles_t rdtsc(){
         printf("  %-20s %lld\n", GMP, gmp); \
         if (lmp <= gmp && lmp <= bsdnt) { \
             printf("  %-20s \x1b[32;1m%lld\x1b[0m\n", LMP, lmp); \
-        } else if (lmp <= gmp + 10 || lmp <= bsdnt + 10) { \
+        } else if (lmp <= gmp * 105 / 100 && lmp <= bsdnt * 105 / 100) { \
+            printf("  %-20s \x1b[34;1m%lld\x1b[0m\n", LMP, lmp); \
+        } else if (lmp <= gmp || lmp <= bsdnt) { \
             printf("  %-20s \x1b[33;1m%lld\x1b[0m\n", LMP, lmp); \
         } else { \
             printf("  %-20s \x1b[31;1m%lld\x1b[0m\n", LMP, lmp); \
