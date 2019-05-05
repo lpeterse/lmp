@@ -9,13 +9,7 @@ void lmp_mul_mn(
 
     lmp_dlimb_t ab;
     lmp_limb_t addc, mulc = 0;
-    for (size_t bi = 0; bi < bn; bi++)
-    {
-        ab = (lmp_dlimb_t) ap[0] * bp[bi] + mulc;
-        mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
-        rp[bi] = (lmp_limb_t) ab;
-    }
-    rp[bn] = mulc;
+    rp[bn] = lmp_mul_m1(rp, bp, bn, ap[0]);
     for (size_t ai = 1; ai < an; ai++)
     {
         addc = mulc = 0;
