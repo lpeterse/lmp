@@ -7,21 +7,13 @@ void lmp_mul_mn(
     ASSERT(an > 1);
     ASSERT(bn > 1);
 
-    lmp_dlimb_t ab;
-    lmp_limb_t addc, mulc = 0;
     rp[bn] = lmp_mul_m1(rp, bp, bn, ap[0]);
     for (size_t ai = 1; ai < an; ai++)
     {
-        addc = mulc = 0;
-        for (size_t bi = 0; bi < bn; bi++)
+        lmp_limb_t mulc = lmp_mul_m1_add(rp + ai, bp, bn, ap[ai]);
+        if (ai + 1 < an || mulc)
         {
-            ab = (lmp_dlimb_t) ap[ai] * bp[bi] + mulc;
-            mulc = (lmp_limb_t) (ab >> LMP_LIMB_W);
-            rp[ai + bi] = lmp_add_1c(rp[ai+bi], (lmp_limb_t) ab, &addc);
-        }
-        if (ai + 1 < an || mulc || addc)
-        {
-            rp[ai + bn] = addc + mulc;
+            rp[ai + bn] = mulc;
         }
     }
 }

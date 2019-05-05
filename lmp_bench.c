@@ -358,6 +358,38 @@ static void bench_mul_m1_0001(void)
     }
 }
 
+static void bench_mul_m1_add_0001(void)
+{
+    printf("%-30s", __func__);
+    size_t m = 300;
+    lmp_limb_t ap[m];
+    lmp_limb_t b;
+    rand_t rnd;
+    randinit(&rnd);
+    nn_random(ap, rnd, m);
+    nn_random(&b, rnd, 1);
+    lmp_limb_t rp1[m], rp2[m], rp3[m];
+    cycles_t c1, c2, c3;
+
+    BENCH(c1, {
+        mpn_addmul_1(rp1, ap, m, b);
+    });
+    BENCH(c2, {
+        lmp_mul_m1_add(rp2, ap, m, b);
+    });
+    BENCH(c3, {
+        nn_addmul1(rp3, ap, m, b);
+    });
+
+    COMPARE(c1, c2, c3);
+
+    for (size_t i = 0; i < m; i++) {
+        ASSERT_LIMB_EQUAL(i, GMP, rp1[i], LMP,   rp2[i]);
+        ASSERT_LIMB_EQUAL(i, GMP, rp1[i], BSDNT, rp3[i]);
+    }
+}
+
+
 static void bench_mul_mn_0001(void)
 {
     printf("%-30s", __func__);
@@ -638,6 +670,7 @@ int main()
     bench_sub_mmb_0001();
     bench_sub_mn_0001();
     bench_mul_m1_0001();
+    bench_mul_m1_add_0001();
     bench_mul_mn_0001();
     bench_lshift_0001();
     bench_lshift_0002();
