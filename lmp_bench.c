@@ -39,7 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "lmp.h"
 
 #ifdef  LMP_NOASM
-#define LMP   "LMP (no asm)"
+#define LMP   "(noasm) LMP"
 #else
 #define LMP   "LMP"
 #endif
@@ -65,17 +65,18 @@ cycles_t rdtsc(){
         }; \
     }
 #define COMPARE(gmp, lmp, bsdnt) {\
-        printf("%10lld", gmp); \
+        printf("%14lld", gmp); \
+        printf("%14lld", bsdnt); \
         if (lmp <= gmp && lmp <= bsdnt) { \
-            printf("\x1b[32;1m%10lld\x1b[0m",lmp); \
+            printf("\x1b[32;1m%14lld\x1b[0m",lmp); \
         } else if (lmp <= gmp * 105 / 100 && lmp <= bsdnt * 105 / 100) { \
-            printf("\x1b[34;1m%10lld\x1b[0m", lmp); \
+            printf("\x1b[34;1m%14lld\x1b[0m", lmp); \
         } else if (lmp <= gmp || lmp <= bsdnt) { \
-            printf("\x1b[33;1m%10lld\x1b[0m", lmp); \
+            printf("\x1b[33;1m%14lld\x1b[0m", lmp); \
         } else { \
-            printf("\x1b[31;1m%10lld\x1b[0m", lmp); \
+            printf("\x1b[31;1m%14lld\x1b[0m", lmp); \
         } \
-        printf("%10lld\n", bsdnt); \
+        printf("\n"); \
     }
 #define ASSERT_LIMB_EQUAL(i, n1, v1, n2, v2) {\
         if ((v1) != (v2)) {\
@@ -662,9 +663,8 @@ static void bench_popcount_m_0002(void)
 
 int main()
 {
-    printf("Benchmarking %s...\n", LMP);
-    printf("____________________________________________________________\n");
-    printf("                                     GMP       LMP     BSDNT\n\n");
+    printf("Benchmarking...               %14s%14s%14s\n", GMP, BSDNT, LMP);
+    printf("________________________________________________________________________\n\n");
 
     bench_cmp_mm_0001();
     bench_cmp_mm_0002();

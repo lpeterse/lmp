@@ -1,5 +1,5 @@
 #ifndef LMP_SETBIT
-void lmp_setbit(
+inline void lmp_setbit(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)

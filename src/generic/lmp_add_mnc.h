@@ -1,5 +1,5 @@
 #ifndef LMP_ADD_MNC
-lmp_limb_t lmp_add_mnc(
+inline lmp_limb_t lmp_add_mnc(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn, lmp_limb_t c)

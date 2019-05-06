@@ -1,5 +1,5 @@
 #ifndef LMP_SUB_MB
-lmp_limb_t lmp_sub_mb(
+inline lmp_limb_t lmp_sub_mb(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t borrow)
 {

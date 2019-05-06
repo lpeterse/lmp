@@ -1,5 +1,5 @@
 #ifndef LMP_CMP_MN
-int lmp_cmp_mn(
+inline int lmp_cmp_mn(
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn)
 {

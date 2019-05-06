@@ -1,5 +1,5 @@
 #ifndef LMP_MUL_MN
-void lmp_mul_mn(
+inline void lmp_mul_mn(
           lmp_limb_t *const restrict rp,
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)

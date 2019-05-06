@@ -13,7 +13,7 @@ static inline size_t lmp_popcount_1_native(lmp_limb_t a)
 }
 
 #define LMP_POPCOUNT_M
-size_t lmp_popcount_m(
+inline size_t lmp_popcount_m(
     const lmp_limb_t *restrict ap, size_t an)
 {
     size_t r = 0;

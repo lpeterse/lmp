@@ -1,5 +1,5 @@
 #ifndef LMP_SETBIT_SIZE
-size_t lmp_setbit_size(
+inline size_t lmp_setbit_size(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {

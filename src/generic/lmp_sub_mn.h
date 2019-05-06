@@ -1,5 +1,5 @@
 #ifndef LMP_SUB_MN
-void lmp_sub_mn(
+inline void lmp_sub_mn(
           lmp_limb_t *restrict rp, size_t rn,
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn)

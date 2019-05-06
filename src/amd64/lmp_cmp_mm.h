@@ -1,5 +1,5 @@
 #define LMP_CMP_MM
-int lmp_cmp_mm(
+inline int lmp_cmp_mm(
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m)
 {

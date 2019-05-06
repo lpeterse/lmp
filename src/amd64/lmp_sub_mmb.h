@@ -1,5 +1,5 @@
 #define LMP_SUB_MMB
-lmp_limb_t lmp_sub_mmb(
+inline lmp_limb_t lmp_sub_mmb(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap,
     const lmp_limb_t *restrict bp, size_t m, lmp_limb_t borrow)
@@ -45,8 +45,8 @@ lmp_limb_t lmp_sub_mmb(
         "movl    $0, %k[res];"
         "setb    %b[res];"
     "4:;"
-        : [rp] "+r" (rp), [ap] "+r" (ap), [bp] "+r" (bp),
-          [m] "+c" (m), [borrow] "+r" (borrow), [res] "=a" (res)
+        : [rp] "+&r" (rp), [ap] "+&r" (ap), [bp] "+&r" (bp),
+          [m] "+&c" (m), [borrow] "+&r" (borrow), [res] "=&a" (res)
         :
         : "cc", "memory"
     );

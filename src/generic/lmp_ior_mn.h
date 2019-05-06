@@ -1,5 +1,5 @@
 #ifndef LMP_IOR_MN
-void lmp_ior_mn(
+inline void lmp_ior_mn(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap,
     const lmp_limb_t *const restrict bp)

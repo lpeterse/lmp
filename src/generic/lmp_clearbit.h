@@ -1,5 +1,5 @@
 #ifndef LMP_CLEARBIT
-void lmp_clearbit(
+inline void lmp_clearbit(
           lmp_limb_t *const restrict rp, const size_t rn,
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)

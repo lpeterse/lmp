@@ -1,5 +1,5 @@
 #ifndef LMP_ADD_MN_SIZE
-size_t lmp_add_mn_size(
+inline size_t lmp_add_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {

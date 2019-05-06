@@ -27,7 +27,7 @@ static inline size_t lmp_sub_nn_size(
     return ap[0] != bp[0];
 }
 
-size_t lmp_sub_mn_size(
+inline size_t lmp_sub_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn)
 {

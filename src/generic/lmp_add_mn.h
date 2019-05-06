@@ -1,5 +1,5 @@
 #ifndef LMP_ADD_MN
-void lmp_add_mn(
+inline void lmp_add_mn(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an,
     const lmp_limb_t *restrict bp, size_t bn)

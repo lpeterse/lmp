@@ -1,5 +1,5 @@
 #ifndef LMP_TESTBIT
-size_t lmp_testbit(
+inline size_t lmp_testbit(
     const lmp_limb_t *const restrict ap, const size_t an,
                                          const size_t bi)
 {

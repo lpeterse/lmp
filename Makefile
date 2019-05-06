@@ -1,7 +1,7 @@
 .PHONY: all bench bench-noasm test dump clean
 
 AR     := ar
-CC     := gcc
+CC     := clang
 CFLAGS := -Wall -std=c99 -O2 #-fno-unroll-loops
 
 LD_LIBRARY_PATH := ./:${LD_LIBRARY_PATH}
@@ -15,11 +15,9 @@ test: lmp_test.out lmp_test_noasm.out
 	./lmp_test_noasm.out
 	./lmp_test.out
 
-bench: lmp_bench.out
-	./$<
-
-bench-noasm: lmp_bench_noasm.out
-	./$<
+bench: lmp_bench_noasm.out lmp_bench.out
+	./lmp_bench_noasm.out
+	./lmp_bench.out
 
 dump: lmp.s
 	cat $<
@@ -51,10 +49,10 @@ lmp_test_noasm.out: lmp_test.c lmp.c
 	$(CC) $(CFLAGS) -DLMP_ASSERT -DLMP_NOASM $< lmp.c -o $@
 
 lmp_bench.out: lmp_bench.c liblmp.so
-	$(CC) $(CFLAGS) $^ -fno-unroll-loops -s -lbsdnt -lgmp -L . -llmp -o $@
+	$(CC) $(CFLAGS) $^ -s -lbsdnt -lgmp -L . -llmp -o $@
 
 lmp_bench_noasm.out: lmp_bench.c liblmp_noasm.so
-	$(CC) $(CFLAGS) $^ -fno-unroll-loops -s -lbsdnt -lgmp -L . -llmp_noasm -o $@
+	$(CC) $(CFLAGS) $^ -DLMP_NOASM  -s -lbsdnt -lgmp -L . -llmp_noasm -o $@
 
 # Libraries
 
