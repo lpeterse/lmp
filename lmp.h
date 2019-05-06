@@ -136,6 +136,10 @@ lmp_limb_t lmp_mul_m1(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t an, lmp_limb_t b);
 
+lmp_limb_t lmp_mul_m1_add(
+          lmp_limb_t *restrict rp,
+    const lmp_limb_t *restrict ap, size_t an, lmp_limb_t b);
+
 size_t lmp_mul_mn_size(
     const lmp_limb_t *const restrict ap, const size_t an,
     const lmp_limb_t *const restrict bp, const size_t bn);

@@ -1,5 +1,5 @@
 #ifndef LMP_ADD_1C
-lmp_limb_t lmp_add_1c(
+inline lmp_limb_t lmp_add_1c(
     const lmp_limb_t a, const lmp_limb_t b, lmp_limb_t *carry)
 {
 #if __has_feature(__builtin_addcl)

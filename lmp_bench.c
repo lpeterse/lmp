@@ -337,22 +337,23 @@ static void bench_mul_m1_0001(void)
     randinit(&rnd);
     nn_random(ap, rnd, m);
     nn_random(&b, rnd, 1);
-    lmp_limb_t rp1[m], rp2[m], rp3[m];
     cycles_t c1, c2, c3;
 
+    lmp_limb_t rp1[m + 1], rp2[m + 1], rp3[m + 1];
+
     BENCH(c1, {
-        mpn_mul_1(rp1, ap, m, b);
+        rp1[m] = mpn_mul_1(rp1, ap, m, b);
     });
     BENCH(c2, {
-        lmp_mul_m1(rp2, ap, m, b);
+        rp2[m] = lmp_mul_m1(rp2, ap, m, b);
     });
     BENCH(c3, {
-        nn_mul1(rp3, ap, m, b);
+        rp3[m] = nn_mul1(rp3, ap, m, b);
     });
 
     COMPARE(c1, c2, c3);
 
-    for (size_t i = 0; i < m; i++) {
+    for (size_t i = 0; i < m + 1; i++) {
         ASSERT_LIMB_EQUAL(i, GMP, rp1[i], LMP,   rp2[i]);
         ASSERT_LIMB_EQUAL(i, GMP, rp1[i], BSDNT, rp3[i]);
     }
@@ -368,22 +369,26 @@ static void bench_mul_m1_add_0001(void)
     randinit(&rnd);
     nn_random(ap, rnd, m);
     nn_random(&b, rnd, 1);
-    lmp_limb_t rp1[m], rp2[m], rp3[m];
     cycles_t c1, c2, c3;
 
+    lmp_limb_t rp1[m+1], rp2[m+1], rp3[m+1];
+    for (size_t i = 0; i < m + 1; i++) {
+        rp1[i] = rp2[i] = rp3[i] = 123;
+    }
+
     BENCH(c1, {
-        mpn_addmul_1(rp1, ap, m, b);
+        rp1[m] = mpn_addmul_1(rp1, ap, m, b);
     });
     BENCH(c2, {
-        lmp_mul_m1_add(rp2, ap, m, b);
+        rp2[m] = lmp_mul_m1_add(rp2, ap, m, b);
     });
     BENCH(c3, {
-        nn_addmul1(rp3, ap, m, b);
+        rp3[m] = nn_addmul1(rp3, ap, m, b);
     });
 
     COMPARE(c1, c2, c3);
 
-    for (size_t i = 0; i < m; i++) {
+    for (size_t i = 0; i < m + 1; i++) {
         ASSERT_LIMB_EQUAL(i, GMP, rp1[i], LMP,   rp2[i]);
         ASSERT_LIMB_EQUAL(i, GMP, rp1[i], BSDNT, rp3[i]);
     }

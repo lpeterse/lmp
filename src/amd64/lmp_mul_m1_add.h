@@ -1,5 +1,5 @@
 #define LMP_MUL_M1_ADD
-lmp_limb_t lmp_mul_m1_add(
+inline lmp_limb_t lmp_mul_m1_add(
           lmp_limb_t *restrict rp,
     const lmp_limb_t *restrict ap, size_t m, lmp_limb_t b)
 {
