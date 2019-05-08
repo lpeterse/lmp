@@ -1,7 +1,7 @@
 .PHONY: all bench bench-noasm test dump clean
 
 AR     := ar
-CC     := gcc
+CC     := clang
 CFLAGS := -Wall -std=c99 -O2 #-fno-unroll-loops
 
 LD_LIBRARY_PATH := ./:${LD_LIBRARY_PATH}

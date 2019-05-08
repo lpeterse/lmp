@@ -76,6 +76,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "test/lmp_lshift_size.h"
 #include "test/lmp_lshift.h"
 #include "test/lmp_mul_m1.h"
+#include "test/lmp_mul_m1_add.h"
 #include "test/lmp_mul_mn.h"
 #include "test/lmp_rshift.h"
 #include "test/lmp_setbit.h"
@@ -88,6 +89,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "test/lmp_popcount_m.h"
 
 int main(void) {
+    LMP_MUL_M1_ADD_TESTS();
     LMP_ADD_1C_TESTS();
     LMP_AND_MN_SIZE_TESTS();
     LMP_AND_MN_TESTS();
